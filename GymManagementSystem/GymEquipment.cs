@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,45 +9,32 @@ namespace GymManagementSystem
 {
     class GymEquipment
     {
+        // Private data
         private int gymEquipmentId;
         private int gymRoomId;
         private string gymEquipmentDescription;
 
-        public GymEquipment(int equipmentId, int roomId, string equipmentDescription)
+        public GymEquipment(string equipmentDescription, int roomId)
         {
-            GymEquipmentId = equipmentId;
-            GymRoomId = roomId;
             GymEquipmentDescription = equipmentDescription;
+
+            GymEquipmentTableAdapter equipmentTableAdapter = new GymEquipmentTableAdapter();
+            equipmentTableAdapter.Insert(GymEquipmentDescription, roomId);
         }
 
         // Public properties
-        public int GymEquipmentId
-        {
-            get { return gymEquipmentId; }
-            set
-            {
-                gymEquipmentId = value;
-            }
-        }
-
-        public int GymRoomId
-        {
-            get { return gymRoomId; }
-            set
-            {
-                gymRoomId = value;
-            }
-        }
 
         public string GymEquipmentDescription
         {
             get { return gymEquipmentDescription; }
             set
             {
-                if (value.Trim().Length > 0)
-                    gymEquipmentDescription = value;
-                else
+                if (value.Trim().Length == 0) // Don't allow a description to be blank. 
                     throw new Exception("Equipment description cannot be blank.");
+                else if (value.Trim().Length > 500)
+                    throw new Exception("Equipment description cannot be more than 500 characters.");
+                else
+                    gymEquipmentDescription = value.Trim();
             }
         }
 

@@ -29,10 +29,7 @@ namespace GymManagementSystem
             GymRoomDescription = roomDescription;
 
             GymRoomTableAdapter roomTableAdapter = new GymRoomTableAdapter();
-            int i = roomTableAdapter.Insert(GymRoomName, GymRoomDescription);
-
-            
-            Console.WriteLine(i);
+            roomTableAdapter.Insert(GymRoomName, GymRoomDescription);
         }
 
         // Public properties

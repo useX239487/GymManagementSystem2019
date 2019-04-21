@@ -10,6 +10,8 @@ namespace GymManagementSystem
     {
         private int gymEquipmentScheduleId;
         private int gymEquipmentId;
+        private int gymExercisePlanId;
+
         
     }
 }

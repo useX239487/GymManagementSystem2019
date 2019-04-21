@@ -1,15 +1,19 @@
-﻿<Window x:Class="GymManagementSystem.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GymManagementSystem"
+        xmlns:GymManagementSystemDatabaseDataSetTableAdapters="clr-namespace:GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters" x:Class="GymManagementSystem.MainWindow"
         mc:Ignorable="d"
         Title="Gym Management System" Height="450" Width="800" Loaded="Window_Loaded">
     <Window.Resources>
         <local:GymManagementSystemDatabaseDataSet x:Key="gymManagementSystemDatabaseDataSet"/>
         <CollectionViewSource x:Key="gymRoomViewSource" Source="{Binding GymRoom, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
+        <CollectionViewSource x:Key="gymTrainerViewSource" Source="{Binding GymTrainerWithRoomName, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
+        <CollectionViewSource x:Key="gymEquipmentWithRoomNameViewSource" Source="{Binding GymEquipmentWithRoomName, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
     </Window.Resources>
+
 
     <Grid Background="#FFE5E5E5">
         <DockPanel>
@@ -21,19 +25,57 @@
                     <Separator />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
-                <MenuItem Header="_Tools">
-                    <MenuItem Header="_Management Menu" />
-                    <MenuItem Header="_Trainer Menu" />
-                    <MenuItem Header="_Customer Menu" />
+                <MenuItem Name="menuView" Header="_View">
+                    <MenuItem Name="menuManagementView" Header="_Management Menu" IsCheckable="true" IsChecked="True" Click="MenuManagementView_Click" />
+                    <MenuItem Name="menuTrainerView" Header="_Trainer Menu" IsCheckable="true" Click="MenuTrainerView_Click" />
+                    <MenuItem Name="menuCustomerView" Header="_Customer Menu" IsCheckable="true" Click="MenuCustomerView_Click" />
+                </MenuItem>
+                <MenuItem Name="menuTools" Header="_Tools">
+                    <MenuItem x:Name="menuGenerateSeedData" Header="_Generate Seed Data" Click="MenuGenerateSeedData_Click" />
+                    <MenuItem x:Name="menuDeleteAllData" Header="_Delete All Data" Click="MenuDeleteAllData_Click" />
                 </MenuItem>
             </Menu>
             <TabControl x:Name="tabControlMain" Margin="0,0,0,0"  >
-
                 <TabItem x:Name="tabManagementCustomers" Header="Customers" >
                     <Grid Background="#FFE5E5E5"/>
                 </TabItem>
                 <TabItem x:Name="tabManagementTrainers" Header="Trainers" >
-                    <Grid Background="#FFE5E5E5"/>
+                    <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymTrainerViewSource}">
+                        <GroupBox x:Name="grpBxAddNewTrainer" Header="New Trainer" HorizontalAlignment="Left" Height="148" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="512">
+                            <Grid>
+                                <Label x:Name="lblAddTrainerFirstName" Content="First Name: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddTrainerFirstName" Height="23" Margin="88,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="50" HorizontalAlignment="Left" Width="130"/>
+
+                                <Label x:Name="lblAddTrainerLastName" Content="Last Name: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddTrainerLastName" Height="23" Margin="88,39,0,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="50" HorizontalAlignment="Left" Width="130" />
+
+                                <Label x:Name="lblAddTrainerStartTime" Content="Start Time: " HorizontalAlignment="Left" Margin="223,10,0,0" VerticalAlignment="Top"/>
+                                <ComboBox x:Name="cmbBxAddTrainerStartTime" Height="23" Margin="0,13,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="168">
+                                    <ComboBoxItem Content="08:00:00"/>
+                                    <ComboBoxItem Content="08:30:00"/>
+                                    <ComboBoxItem Content="09:00:00"/>
+                                    <ComboBoxItem Content="09:30:00"/>
+                                    <ComboBoxItem Content="10:00:00"/>
+                                </ComboBox>
+
+                                <Label x:Name="lblAddTrainerAssignedRoom" Content="Assigned Room: " HorizontalAlignment="Left" Margin="223,36,0,0" VerticalAlignment="Top"/>
+                                <ComboBox x:Name="cmbBxAddTrainerAssignedRoom" Height="23" Margin="0,41,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="168" ItemsSource="{Binding}" SelectedValuePath="gymRoomId" DisplayMemberPath="gymRoomName" />
+
+                                <Button x:Name="btnNewTrainerAdd" Content="Add" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="BtnNewTrainerAdd_Click"  />
+                                <Button x:Name="btnNewTrainerClear" Content="Clear" Margin="10,0,0,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75" Click="BtnNewTrainerClear_Click"  />
+
+                            </Grid>
+                        </GroupBox>
+                        <DataGrid x:Name="gymTrainerDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,163" RowDetailsVisibilityMode="VisibleWhenSelected"  AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn x:Name="gymTrainerIdColumn" Binding="{Binding gymTrainerId}" Header="Trainer Id" IsReadOnly="True" Width="SizeToCells" MinWidth="60"/>
+                                <DataGridTextColumn x:Name="gymTrainerFirstNameColumn" Binding="{Binding gymTrainerFirstName}" Header="First Name" IsReadOnly="True" Width="SizeToCells" MinWidth="70"/>
+                                <DataGridTextColumn x:Name="gymTrainerLastNameColumn" Binding="{Binding gymTrainerLastName}" Header="Last Name" IsReadOnly="True" Width="SizeToCells" MinWidth="70"/>
+                                <DataGridTextColumn x:Name="gymTrainerStartTimeColumn" Binding="{Binding gymTrainerStartTime}" Header="Start Time" IsReadOnly="True" Width="SizeToCells" MinWidth="70"/>
+                                <DataGridTextColumn x:Name="gymRoomIdColumn1" Binding="{Binding gymRoomName}" Header="Assigned Room" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                 </TabItem>
                 <TabItem x:Name="tabManagementRooms" Header="Rooms" >
                     <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymRoomViewSource}">
@@ -53,12 +95,42 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn x:Name="gymRoomIdColumn" Binding="{Binding gymRoomId}" Header="Room Id" IsReadOnly="True" Width="SizeToCells" MinWidth="55"/>
                                 <DataGridTextColumn x:Name="gymRoomNameColumn" Binding="{Binding gymRoomName}" Header="Name" Width="SizeToCells" MinWidth="50" IsReadOnly="True"/>
-                                <DataGridTextColumn x:Name="gymRoomDescriptionColumn" Binding="{Binding gymRoomDescription}" Header="Description" Width="SizeToCells" MinWidth="80"/>
+                                <DataGridTextColumn x:Name="gymRoomDescriptionColumn" Binding="{Binding gymRoomDescription}" Header="Description" Width="SizeToCells" IsReadOnly="True" MinWidth="80"/>
+                                <DataGridTextColumn x:Name="gymRoomOpenTimeColumn" Binding="{Binding gymRoomOpenTime}" Header="Open Time" IsReadOnly="True" Width="SizeToCells" MinWidth="70"/>
+                                <DataGridTextColumn x:Name="gymRoomCloseTimeColumn" Binding="{Binding gymRoomCloseTime}" Width="SizeToCells" Header="Close Time" IsReadOnly="True" MinWidth="70"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="tabManagementEquipment" Header="Equipment" >
+                    <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymEquipmentWithRoomNameViewSource}">
+                        <GroupBox x:Name="grpBxAddNewEquipment" Header="New Equipment" HorizontalAlignment="Left" Height="148" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="341">
+                            <Grid>
+                                <Label x:Name="lblAddEquipmentDescription" Content="Equipment Description: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddEquipmentDescription" Height="23" Margin="152,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="50" HorizontalAlignment="Left" Width="168"/>
+
+                                <Label x:Name="lblAddEquipmentAssignedRoom" Content="Assigned Room: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
+                                <ComboBox x:Name="cmbBxAddEquipmentAssignedRoom" Height="23" Margin="152,41,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="168" ItemsSource="{Binding}" SelectedValuePath="gymRoomId" DisplayMemberPath="gymRoomName" />
+
+                                <Button x:Name="btnNewEquipmentAdd" Content="Add" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="BtnNewEquipmentAdd_Click"  />
+                                <Button x:Name="btnNewEquipmentClear" Content="Clear" Margin="10,0,0,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75" Click="BtnNewEquipmentClear_Click"  />
+
+                            </Grid>
+                        </GroupBox>
+                        <DataGrid x:Name="gymEquipmentWithRoomNameDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,163" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn x:Name="gymEquipmentIdColumn" Binding="{Binding gymEquipmentId}" Header="Equipment Id" IsReadOnly="True" Width="SizeToCells" MinWidth="85"/>
+                                <DataGridTextColumn x:Name="gymEquipmentDescriptionColumn" Binding="{Binding gymEquipmentDescription}" Header="Description" Width="SizeToCells" IsReadOnly="True" MinWidth="80"/>
+                                <DataGridTextColumn x:Name="gymRoomNameColumn1" Binding="{Binding gymRoomName}" Header="Room Name" Width="SizeToCells" IsReadOnly="True" MinWidth="80"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
                 </TabItem>
-                <TabItem x:Name="tabManagementEquipment" Header="Equipment" >
+                <TabItem x:Name="tabTrainerExercisePlans" Header="Execise Plans" >
+                    <Grid Background="#FFE5E5E5"/>
+                </TabItem>
+                <TabItem x:Name="tabCustomerSchedule" Header="Schedule Training" >
                     <Grid Background="#FFE5E5E5"/>
                 </TabItem>
             </TabControl>

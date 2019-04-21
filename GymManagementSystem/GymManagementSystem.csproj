@@ -89,6 +89,9 @@
     <Compile Include="GymEquipmentSchedule.cs" />
     <Compile Include="GymEquipment.cs" />
     <Compile Include="GymExercisePlan.cs" />
+    <Compile Include="GymManagementSystemDatabaseDataSet.cs">
+      <DependentUpon>GymManagementSystemDatabaseDataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="GymManagementSystemDatabaseDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
