@@ -5,8 +5,65 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GymManagementSystem"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="Gym Management System" Height="450" Width="800" Loaded="Window_Loaded">
+    <Window.Resources>
+        <local:GymManagementSystemDatabaseDataSet x:Key="gymManagementSystemDatabaseDataSet"/>
+        <CollectionViewSource x:Key="gymRoomViewSource" Source="{Binding GymRoom, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
+    </Window.Resources>
+
+    <Grid Background="#FFE5E5E5">
+        <DockPanel>
+            <Menu x:Name="menuMain" DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_New" />
+                    <MenuItem Header="_Open" />
+                    <MenuItem Header="_Save" />
+                    <Separator />
+                    <MenuItem Header="_Exit" />
+                </MenuItem>
+                <MenuItem Header="_Tools">
+                    <MenuItem Header="_Management Menu" />
+                    <MenuItem Header="_Trainer Menu" />
+                    <MenuItem Header="_Customer Menu" />
+                </MenuItem>
+            </Menu>
+            <TabControl x:Name="tabControlMain" Margin="0,0,0,0"  >
+
+                <TabItem x:Name="tabManagementCustomers" Header="Customers" >
+                    <Grid Background="#FFE5E5E5"/>
+                </TabItem>
+                <TabItem x:Name="tabManagementTrainers" Header="Trainers" >
+                    <Grid Background="#FFE5E5E5"/>
+                </TabItem>
+                <TabItem x:Name="tabManagementRooms" Header="Rooms" >
+                    <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymRoomViewSource}">
+                        <GroupBox x:Name="grpBxAddNewGymRoom" Header="New Gym Room" HorizontalAlignment="Left" Height="148" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="282">
+                            <Grid>
+                                <Label x:Name="lblAddGymRoomName" Content="Room Name: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddGymRoomName" Height="23" Margin="121,13,10,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="100" KeyDown="TxtBxAddGymRoomName_KeyDown"/>
+
+                                <Label x:Name="lblAddGymRoomDescription" Content="Room Description: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddGymRoomDescription" Height="23" Margin="121,39,10,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="500" KeyDown="TxtBxAddGymRoomDescription_KeyDown"/>
+                                <Button x:Name="btnNewGymRoomAdd" Content="Add" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="BtnNewGymRoomAdd_Click" />
+                                <Button x:Name="btnNewGymRoomClear" Content="Clear" Margin="10,0,0,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75" Click="BtnNewGymRoomClear_Click" />
+
+                            </Grid>
+                        </GroupBox>
+                        <DataGrid x:Name="gymRoomDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,163" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn x:Name="gymRoomIdColumn" Binding="{Binding gymRoomId}" Header="Room Id" IsReadOnly="True" Width="SizeToCells" MinWidth="55"/>
+                                <DataGridTextColumn x:Name="gymRoomNameColumn" Binding="{Binding gymRoomName}" Header="Name" Width="SizeToCells" MinWidth="50" IsReadOnly="True"/>
+                                <DataGridTextColumn x:Name="gymRoomDescriptionColumn" Binding="{Binding gymRoomDescription}" Header="Description" Width="SizeToCells" MinWidth="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="tabManagementEquipment" Header="Equipment" >
+                    <Grid Background="#FFE5E5E5"/>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+
+
     </Grid>
 </Window>
