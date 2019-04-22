@@ -9248,9 +9248,11 @@ SELECT gymScheduleId, gymTrainerId, gymEquipmentId, gymScheduleStartDatetime, gy
             this._commandCollection[0].Connection = this.Connection;
             this._commandCollection[0].CommandText = @"SELECT        GymEquipmentTrainerScheduleCombinations.gymEquipmentId, GymEquipmentTrainerScheduleCombinations.gymTrainerId, GymEquipmentTrainerScheduleCombinations.scheduleStartTime, GymSchedule.gymScheduleId 
 FROM            GymEquipmentTrainerScheduleCombinations LEFT JOIN 
-( SELECT * FROM                          GymSchedule WHERE CAST(GymSchedule.gymScheduleStartDatetime AS DATE) = @ScheduleDate) AS GymSchedule ON GymEquipmentTrainerScheduleCombinations.gymTrainerId = GymSchedule.gymTrainerId AND GymEquipmentTrainerScheduleCombinations.gymEquipmentId = GymSchedule.gymEquipmentId AND GymEquipmentTrainerScheduleCombinations.scheduleStartTime >= CAST(GymSchedule.gymScheduleStartDatetime AS TIME) AND GymEquipmentTrainerScheduleCombinations.scheduleStartTime < CAST(GymSchedule.gymScheduleStartDatetime + CAST(GymSchedule.gymScheduleDuration AS DATETIME) AS TIME) 
-WHERE GymSchedule.gymScheduleId IS NULL";
+( SELECT * FROM                          GymSchedule WHERE CAST(GymSchedule.gymScheduleStartDatetime AS DATE) = @ScheduleDate ) AS GymSchedule ON GymEquipmentTrainerScheduleCombinations.gymTrainerId = GymSchedule.gymTrainerId AND GymEquipmentTrainerScheduleCombinations.gymEquipmentId = GymSchedule.gymEquipmentId AND GymEquipmentTrainerScheduleCombinations.scheduleStartTime >= CAST(GymSchedule.gymScheduleStartDatetime AS TIME) AND GymEquipmentTrainerScheduleCombinations.scheduleStartTime < CAST(GymSchedule.gymScheduleStartDatetime + CAST(GymSchedule.gymScheduleDuration AS DATETIME) AS TIME) 
+WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinations.gymEquipmentId = @EquipmentId AND GymEquipmentTrainerScheduleCombinations.gymTrainerId = @TrainerId";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
+            this._commandCollection[0].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@EquipmentId", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "gymEquipmentId", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._commandCollection[0].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@TrainerId", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "gymTrainerId", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._commandCollection[0].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@ScheduleDate", global::System.Data.SqlDbType.VarChar, 1024, global::System.Data.ParameterDirection.Input, 0, 0, "", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }
         
@@ -9258,13 +9260,15 @@ WHERE GymSchedule.gymScheduleId IS NULL";
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Fill, true)]
-        public virtual int Fill(GymManagementSystemDatabaseDataSet.GymScheduleAvailabilityDataTable dataTable, string ScheduleDate) {
+        public virtual int Fill(GymManagementSystemDatabaseDataSet.GymScheduleAvailabilityDataTable dataTable, int EquipmentId, int TrainerId, string ScheduleDate) {
             this.Adapter.SelectCommand = this.CommandCollection[0];
+            this.Adapter.SelectCommand.Parameters[0].Value = ((int)(EquipmentId));
+            this.Adapter.SelectCommand.Parameters[1].Value = ((int)(TrainerId));
             if ((ScheduleDate == null)) {
                 throw new global::System.ArgumentNullException("ScheduleDate");
             }
             else {
-                this.Adapter.SelectCommand.Parameters[0].Value = ((string)(ScheduleDate));
+                this.Adapter.SelectCommand.Parameters[2].Value = ((string)(ScheduleDate));
             }
             if ((this.ClearBeforeFill == true)) {
                 dataTable.Clear();
@@ -9277,13 +9281,15 @@ WHERE GymSchedule.gymScheduleId IS NULL";
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Select, true)]
-        public virtual GymManagementSystemDatabaseDataSet.GymScheduleAvailabilityDataTable GetData(string ScheduleDate) {
+        public virtual GymManagementSystemDatabaseDataSet.GymScheduleAvailabilityDataTable GetData(int EquipmentId, int TrainerId, string ScheduleDate) {
             this.Adapter.SelectCommand = this.CommandCollection[0];
+            this.Adapter.SelectCommand.Parameters[0].Value = ((int)(EquipmentId));
+            this.Adapter.SelectCommand.Parameters[1].Value = ((int)(TrainerId));
             if ((ScheduleDate == null)) {
                 throw new global::System.ArgumentNullException("ScheduleDate");
             }
             else {
-                this.Adapter.SelectCommand.Parameters[0].Value = ((string)(ScheduleDate));
+                this.Adapter.SelectCommand.Parameters[2].Value = ((string)(ScheduleDate));
             }
             GymManagementSystemDatabaseDataSet.GymScheduleAvailabilityDataTable dataTable = new GymManagementSystemDatabaseDataSet.GymScheduleAvailabilityDataTable();
             this.Adapter.Fill(dataTable);
