@@ -541,17 +541,56 @@ SELECT gymScheduleId, gymTrainerId, gymEquipmentId, gymScheduleStartDatetime, gy
           </TableAdapter>
           <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="GymScheduleAvailabilityTableAdapter" GeneratorDataComponentClassName="GymScheduleAvailabilityTableAdapter" Name="GymScheduleAvailability" UserDataComponentName="GymScheduleAvailabilityTableAdapter">
             <MainSource>
-              <DbSource ConnectionRef="GymManagementSystemDatabaseConnectionString (Settings)" DbObjectType="Unknown" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+              <DbSource ConnectionRef="GymManagementSystemDatabaseConnectionString (Settings)" DbObjectName="dbo.v_GymEquipmentTrainerScheduleCombinations" DbObjectType="View" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
                 <SelectCommand>
                   <DbCommand CommandType="Text" ModifiedByUser="true">
-                    <CommandText>SELECT        GymEquipmentTrainerScheduleCombinations.gymEquipmentId, GymEquipmentTrainerScheduleCombinations.gymTrainerId, GymEquipmentTrainerScheduleCombinations.scheduleStartTime, GymSchedule.gymScheduleId 
-FROM            GymEquipmentTrainerScheduleCombinations LEFT JOIN 
-( SELECT * FROM                          GymSchedule WHERE CAST(GymSchedule.gymScheduleStartDatetime AS DATE) = @ScheduleDate ) AS GymSchedule ON GymEquipmentTrainerScheduleCombinations.gymTrainerId = GymSchedule.gymTrainerId AND GymEquipmentTrainerScheduleCombinations.gymEquipmentId = GymSchedule.gymEquipmentId AND GymEquipmentTrainerScheduleCombinations.scheduleStartTime &gt;= CAST(GymSchedule.gymScheduleStartDatetime AS TIME) AND GymEquipmentTrainerScheduleCombinations.scheduleStartTime &lt; CAST(GymSchedule.gymScheduleStartDatetime + CAST(GymSchedule.gymScheduleDuration AS DATETIME) AS TIME) 
-WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinations.gymEquipmentId = @EquipmentId AND GymEquipmentTrainerScheduleCombinations.gymTrainerId = @TrainerId</CommandText>
+                    <CommandText>SELECT v_GymEquipmentTrainerScheduleCombinations.gymEquipmentId, 
+ 	v_GymEquipmentTrainerScheduleCombinations.gymTrainerId, 
+	v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime, 
+	@ScheduleDate as ScheduleDate, 
+	@Duration as Duration
+FROM v_GymEquipmentTrainerScheduleCombinations 
+LEFT JOIN ( SELECT * FROM 
+		v_GymSchedule_Trainer 
+		WHERE v_GymSchedule_Trainer.gymTrainerId = @TrainerId AND CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS DATE) = @ScheduleDate 
+	) AS v_GymSchedule_Trainer 
+ON v_GymEquipmentTrainerScheduleCombinations.gymTrainerId = v_GymSchedule_Trainer.gymTrainerId 
+	AND 
+	( 
+		( v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime &gt;= CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS TIME) 
+		AND v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime &lt; CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) ) 
+			OR ( DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) &gt;= CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS TIME) 
+		AND DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) &lt; CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) )
+			OR ( CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS TIME) &gt;= v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime 
+		AND CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS TIME) &lt; DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) )
+			OR ( CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) &gt;= v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime 
+		AND CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) &lt; DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) ) 
+	) 
+LEFT JOIN ( SELECT * FROM 
+		v_GymSchedule_Equipment 
+		WHERE v_GymSchedule_Equipment.gymEquipmentId = @EquipmentId AND CAST(v_GymSchedule_Equipment.gymScheduleStartDatetime AS DATE) = @ScheduleDate 
+	) AS v_GymSchedule_Equipment 
+ON v_GymEquipmentTrainerScheduleCombinations.gymEquipmentId = v_GymSchedule_Equipment.gymEquipmentId 
+	AND 
+	( 
+		( v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime &gt;= CAST(v_GymSchedule_Equipment.gymScheduleStartDatetime AS TIME) 
+		AND v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime &lt; CAST(v_GymSchedule_Equipment.gymScheduleEndDatetime AS TIME) ) 
+			OR ( DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) &gt;= CAST(v_GymSchedule_Equipment.gymScheduleStartDatetime AS TIME) 
+		AND DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) &lt; CAST(v_GymSchedule_Equipment.gymScheduleEndDatetime AS TIME) )
+			OR ( CAST(v_GymSchedule_Equipment.gymScheduleStartDatetime AS TIME) &gt;= v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime 
+		AND CAST(v_GymSchedule_Equipment.gymScheduleStartDatetime AS TIME) &lt; DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) )
+			OR ( CAST(v_GymSchedule_Equipment.gymScheduleEndDatetime AS TIME) &gt;= v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime 
+		AND CAST(v_GymSchedule_Equipment.gymScheduleEndDatetime AS TIME) &lt; DATEADD(MINUTE, @Duration, v_GymEquipmentTrainerScheduleCombinations.scheduleStartTime) ) 
+	) 
+WHERE v_GymSchedule_Trainer.gymScheduleId IS NULL 
+	AND v_GymSchedule_Equipment.gymScheduleId IS NULL 
+	AND v_GymEquipmentTrainerScheduleCombinations.gymEquipmentId = @EquipmentId 
+	AND v_GymEquipmentTrainerScheduleCombinations.gymTrainerId = @TrainerId</CommandText>
                     <Parameters>
-                      <Parameter AllowDbNull="false" AutogeneratedName="EquipmentId" ColumnName="gymEquipmentId" DataSourceName="[C:\USERS\ALEX\SOURCE\REPOS\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEMDATABASE.MDF].dbo.GymEquipmentTrainerScheduleCombinations" DataTypeServer="int" DbType="Int32" Direction="Input" ParameterName="@EquipmentId" Precision="0" ProviderType="Int" Scale="0" Size="4" SourceColumn="gymEquipmentId" SourceColumnNullMapping="false" SourceVersion="Current" />
-                      <Parameter AllowDbNull="false" AutogeneratedName="TrainerId" ColumnName="gymTrainerId" DataSourceName="[C:\USERS\ALEX\SOURCE\REPOS\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEMDATABASE.MDF].dbo.GymEquipmentTrainerScheduleCombinations" DataTypeServer="int" DbType="Int32" Direction="Input" ParameterName="@TrainerId" Precision="0" ProviderType="Int" Scale="0" Size="4" SourceColumn="gymTrainerId" SourceColumnNullMapping="false" SourceVersion="Current" />
                       <Parameter AllowDbNull="false" AutogeneratedName="ScheduleDate" ColumnName="" DataSourceName="" DataTypeServer="unknown" DbType="AnsiString" Direction="Input" ParameterName="@ScheduleDate" Precision="0" Scale="0" Size="1024" SourceColumn="" SourceColumnNullMapping="false" SourceVersion="Current" />
+                      <Parameter AllowDbNull="false" AutogeneratedName="Duration" ColumnName="" DataSourceName="" DataTypeServer="unknown" DbType="Decimal" Direction="Input" ParameterName="@Duration" Precision="0" Scale="0" Size="0" SourceColumn="" SourceColumnNullMapping="false" SourceVersion="Current" />
+                      <Parameter AllowDbNull="false" AutogeneratedName="EquipmentId" ColumnName="gymEquipmentId" DataSourceName="[C:\USERS\DEFAULT.LAPTOP-NEFOSA8L\SOURCE\REPOS\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEMDATABASE.MDF].dbo.v_GymEquipmentTrainerScheduleCombinations" DataTypeServer="int" DbType="Int32" Direction="Input" ParameterName="@EquipmentId" Precision="0" ProviderType="Int" Scale="0" Size="4" SourceColumn="gymEquipmentId" SourceColumnNullMapping="false" SourceVersion="Current" />
+                      <Parameter AllowDbNull="false" AutogeneratedName="TrainerId" ColumnName="gymTrainerId" DataSourceName="[C:\USERS\DEFAULT.LAPTOP-NEFOSA8L\SOURCE\REPOS\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEMDATABASE.MDF].dbo.v_GymEquipmentTrainerScheduleCombinations" DataTypeServer="int" DbType="Int32" Direction="Input" ParameterName="@TrainerId" Precision="0" ProviderType="Int" Scale="0" Size="4" SourceColumn="gymTrainerId" SourceColumnNullMapping="false" SourceVersion="Current" />
                     </Parameters>
                   </DbCommand>
                 </SelectCommand>
@@ -561,7 +600,56 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
               <Mapping SourceColumn="gymEquipmentId" DataSetColumn="gymEquipmentId" />
               <Mapping SourceColumn="gymTrainerId" DataSetColumn="gymTrainerId" />
               <Mapping SourceColumn="scheduleStartTime" DataSetColumn="scheduleStartTime" />
-              <Mapping SourceColumn="gymScheduleId" DataSetColumn="gymScheduleId" />
+              <Mapping SourceColumn="Duration" DataSetColumn="Duration" />
+              <Mapping SourceColumn="ScheduleDate" DataSetColumn="ScheduleDate" />
+            </Mappings>
+            <Sources />
+          </TableAdapter>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="GymCustomerWithExercisePlanTableAdapter" GeneratorDataComponentClassName="GymCustomerWithExercisePlanTableAdapter" Name="GymCustomerWithExercisePlan" UserDataComponentName="GymCustomerWithExercisePlanTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="GymManagementSystemDatabaseConnectionString (Settings)" DbObjectType="Unknown" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="true">
+                    <CommandText>SELECT GymCustomer.gymCustomerId, 
+GymCustomer.gymCustomerFirstName + ' ' + GymCustomer.gymCustomerLastName as gymCustomerName, GymExercisePlan.gymExercisePlanId, GymExercisePlan.gymExercisePlanDescription
+FROM   GymCustomer INNER JOIN
+             GymExercisePlan ON GymCustomer.gymCustomerId = GymExercisePlan.gymCustomerId
+WHERE (GymCustomer.gymTrainerId = @TrainerId)</CommandText>
+                    <Parameters>
+                      <Parameter AllowDbNull="false" AutogeneratedName="TrainerId" ColumnName="gymTrainerId" DataSourceName="[C:\USERS\DEFAULT.LAPTOP-NEFOSA8L\SOURCE\REPOS\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEMDATABASE.MDF].dbo.GymCustomer" DataTypeServer="int" DbType="Int32" Direction="Input" ParameterName="@TrainerId" Precision="0" ProviderType="Int" Scale="0" Size="4" SourceColumn="gymTrainerId" SourceColumnNullMapping="false" SourceVersion="Current" />
+                    </Parameters>
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+            <Mappings>
+              <Mapping SourceColumn="gymCustomerId" DataSetColumn="gymCustomerId" />
+              <Mapping SourceColumn="gymExercisePlanId" DataSetColumn="gymExercisePlanId" />
+              <Mapping SourceColumn="gymExercisePlanDescription" DataSetColumn="gymExercisePlanDescription" />
+              <Mapping SourceColumn="gymCustomerName" DataSetColumn="gymCustomerName" />
+            </Mappings>
+            <Sources />
+          </TableAdapter>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="GymCustomerWithoutExercisePlanTableAdapter" GeneratorDataComponentClassName="GymCustomerWithoutExercisePlanTableAdapter" Name="GymCustomerWithoutExercisePlan" UserDataComponentName="GymCustomerWithoutExercisePlanTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="GymManagementSystemDatabaseConnectionString (Settings)" DbObjectName="dbo.GymCustomer" DbObjectType="Table" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="true">
+                    <CommandText>SELECT GymCustomer.gymCustomerId, 
+GymCustomer.gymCustomerFirstName + ' ' + GymCustomer.gymCustomerLastName as gymCustomerName
+FROM   GymCustomer LEFT JOIN 
+             GymExercisePlan ON GymCustomer.gymCustomerId = GymExercisePlan.gymCustomerId 
+WHERE (GymCustomer.gymTrainerId = @TrainerId) AND GymExercisePlan.gymExercisePlanId IS NULL </CommandText>
+                    <Parameters>
+                      <Parameter AllowDbNull="false" AutogeneratedName="TrainerId" ColumnName="gymTrainerId" DataSourceName="[C:\USERS\DEFAULT.LAPTOP-NEFOSA8L\SOURCE\REPOS\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEM\GYMMANAGEMENTSYSTEMDATABASE.MDF].dbo.GymCustomer" DataTypeServer="int" DbType="Int32" Direction="Input" ParameterName="@TrainerId" Precision="0" ProviderType="Int" Scale="0" Size="4" SourceColumn="gymTrainerId" SourceColumnNullMapping="false" SourceVersion="Current" />
+                    </Parameters>
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+            <Mappings>
+              <Mapping SourceColumn="gymCustomerId" DataSetColumn="gymCustomerId" />
+              <Mapping SourceColumn="gymCustomerName" DataSetColumn="gymCustomerName" />
             </Mappings>
             <Sources />
           </TableAdapter>
@@ -573,7 +661,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
   <xs:element name="GymManagementSystemDatabaseDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="True" msprop:Generator_DataSetName="GymManagementSystemDatabaseDataSet" msprop:Generator_UserDSName="GymManagementSystemDatabaseDataSet">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="GymRoom" msprop:Generator_TableClassName="GymRoomDataTable" msprop:Generator_TableVarName="tableGymRoom" msprop:Generator_TablePropName="GymRoom" msprop:Generator_RowDeletingName="GymRoomRowDeleting" msprop:Generator_RowChangingName="GymRoomRowChanging" msprop:Generator_RowEvHandlerName="GymRoomRowChangeEventHandler" msprop:Generator_RowDeletedName="GymRoomRowDeleted" msprop:Generator_UserTableName="GymRoom" msprop:Generator_RowChangedName="GymRoomRowChanged" msprop:Generator_RowEvArgName="GymRoomRowChangeEvent" msprop:Generator_RowClassName="GymRoomRow">
+        <xs:element name="GymRoom" msprop:Generator_TableClassName="GymRoomDataTable" msprop:Generator_TableVarName="tableGymRoom" msprop:Generator_RowChangedName="GymRoomRowChanged" msprop:Generator_TablePropName="GymRoom" msprop:Generator_RowDeletingName="GymRoomRowDeleting" msprop:Generator_RowChangingName="GymRoomRowChanging" msprop:Generator_RowEvHandlerName="GymRoomRowChangeEventHandler" msprop:Generator_RowDeletedName="GymRoomRowDeleted" msprop:Generator_RowClassName="GymRoomRow" msprop:Generator_UserTableName="GymRoom" msprop:Generator_RowEvArgName="GymRoomRowChangeEvent">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymRoomId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymRoomId" msprop:Generator_ColumnPropNameInRow="gymRoomId" msprop:Generator_ColumnPropNameInTable="gymRoomIdColumn" msprop:Generator_UserColumnName="gymRoomId" type="xs:int" />
@@ -596,7 +684,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymTrainer" msprop:Generator_TableClassName="GymTrainerDataTable" msprop:Generator_TableVarName="tableGymTrainer" msprop:Generator_TablePropName="GymTrainer" msprop:Generator_RowDeletingName="GymTrainerRowDeleting" msprop:Generator_RowChangingName="GymTrainerRowChanging" msprop:Generator_RowEvHandlerName="GymTrainerRowChangeEventHandler" msprop:Generator_RowDeletedName="GymTrainerRowDeleted" msprop:Generator_UserTableName="GymTrainer" msprop:Generator_RowChangedName="GymTrainerRowChanged" msprop:Generator_RowEvArgName="GymTrainerRowChangeEvent" msprop:Generator_RowClassName="GymTrainerRow">
+        <xs:element name="GymTrainer" msprop:Generator_TableClassName="GymTrainerDataTable" msprop:Generator_TableVarName="tableGymTrainer" msprop:Generator_RowChangedName="GymTrainerRowChanged" msprop:Generator_TablePropName="GymTrainer" msprop:Generator_RowDeletingName="GymTrainerRowDeleting" msprop:Generator_RowChangingName="GymTrainerRowChanging" msprop:Generator_RowEvHandlerName="GymTrainerRowChangeEventHandler" msprop:Generator_RowDeletedName="GymTrainerRowDeleted" msprop:Generator_RowClassName="GymTrainerRow" msprop:Generator_UserTableName="GymTrainer" msprop:Generator_RowEvArgName="GymTrainerRowChangeEvent">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymTrainerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymTrainerId" msprop:Generator_ColumnPropNameInRow="gymTrainerId" msprop:Generator_ColumnPropNameInTable="gymTrainerIdColumn" msprop:Generator_UserColumnName="gymTrainerId" type="xs:int" />
@@ -619,7 +707,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymTrainerWithRoomName" msprop:Generator_TableClassName="GymTrainerWithRoomNameDataTable" msprop:Generator_TableVarName="tableGymTrainerWithRoomName" msprop:Generator_TablePropName="GymTrainerWithRoomName" msprop:Generator_RowDeletingName="GymTrainerWithRoomNameRowDeleting" msprop:Generator_RowChangingName="GymTrainerWithRoomNameRowChanging" msprop:Generator_RowEvHandlerName="GymTrainerWithRoomNameRowChangeEventHandler" msprop:Generator_RowDeletedName="GymTrainerWithRoomNameRowDeleted" msprop:Generator_UserTableName="GymTrainerWithRoomName" msprop:Generator_RowChangedName="GymTrainerWithRoomNameRowChanged" msprop:Generator_RowEvArgName="GymTrainerWithRoomNameRowChangeEvent" msprop:Generator_RowClassName="GymTrainerWithRoomNameRow">
+        <xs:element name="GymTrainerWithRoomName" msprop:Generator_TableClassName="GymTrainerWithRoomNameDataTable" msprop:Generator_TableVarName="tableGymTrainerWithRoomName" msprop:Generator_RowChangedName="GymTrainerWithRoomNameRowChanged" msprop:Generator_TablePropName="GymTrainerWithRoomName" msprop:Generator_RowDeletingName="GymTrainerWithRoomNameRowDeleting" msprop:Generator_RowChangingName="GymTrainerWithRoomNameRowChanging" msprop:Generator_RowEvHandlerName="GymTrainerWithRoomNameRowChangeEventHandler" msprop:Generator_RowDeletedName="GymTrainerWithRoomNameRowDeleted" msprop:Generator_RowClassName="GymTrainerWithRoomNameRow" msprop:Generator_UserTableName="GymTrainerWithRoomName" msprop:Generator_RowEvArgName="GymTrainerWithRoomNameRowChangeEvent">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymTrainerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymTrainerId" msprop:Generator_ColumnPropNameInRow="gymTrainerId" msprop:Generator_ColumnPropNameInTable="gymTrainerIdColumn" msprop:Generator_UserColumnName="gymTrainerId" type="xs:int" />
@@ -648,7 +736,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymEquipment" msprop:Generator_TableClassName="GymEquipmentDataTable" msprop:Generator_TableVarName="tableGymEquipment" msprop:Generator_TablePropName="GymEquipment" msprop:Generator_RowDeletingName="GymEquipmentRowDeleting" msprop:Generator_RowChangingName="GymEquipmentRowChanging" msprop:Generator_RowEvHandlerName="GymEquipmentRowChangeEventHandler" msprop:Generator_RowDeletedName="GymEquipmentRowDeleted" msprop:Generator_UserTableName="GymEquipment" msprop:Generator_RowChangedName="GymEquipmentRowChanged" msprop:Generator_RowEvArgName="GymEquipmentRowChangeEvent" msprop:Generator_RowClassName="GymEquipmentRow">
+        <xs:element name="GymEquipment" msprop:Generator_TableClassName="GymEquipmentDataTable" msprop:Generator_TableVarName="tableGymEquipment" msprop:Generator_RowChangedName="GymEquipmentRowChanged" msprop:Generator_TablePropName="GymEquipment" msprop:Generator_RowDeletingName="GymEquipmentRowDeleting" msprop:Generator_RowChangingName="GymEquipmentRowChanging" msprop:Generator_RowEvHandlerName="GymEquipmentRowChangeEventHandler" msprop:Generator_RowDeletedName="GymEquipmentRowDeleted" msprop:Generator_RowClassName="GymEquipmentRow" msprop:Generator_UserTableName="GymEquipment" msprop:Generator_RowEvArgName="GymEquipmentRowChangeEvent">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymEquipmentId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymEquipmentId" msprop:Generator_ColumnPropNameInRow="gymEquipmentId" msprop:Generator_ColumnPropNameInTable="gymEquipmentIdColumn" msprop:Generator_UserColumnName="gymEquipmentId" type="xs:int" />
@@ -663,7 +751,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymEquipmentWithRoomName" msprop:Generator_TableClassName="GymEquipmentWithRoomNameDataTable" msprop:Generator_TableVarName="tableGymEquipmentWithRoomName" msprop:Generator_TablePropName="GymEquipmentWithRoomName" msprop:Generator_RowDeletingName="GymEquipmentWithRoomNameRowDeleting" msprop:Generator_RowChangingName="GymEquipmentWithRoomNameRowChanging" msprop:Generator_RowEvHandlerName="GymEquipmentWithRoomNameRowChangeEventHandler" msprop:Generator_RowDeletedName="GymEquipmentWithRoomNameRowDeleted" msprop:Generator_UserTableName="GymEquipmentWithRoomName" msprop:Generator_RowChangedName="GymEquipmentWithRoomNameRowChanged" msprop:Generator_RowEvArgName="GymEquipmentWithRoomNameRowChangeEvent" msprop:Generator_RowClassName="GymEquipmentWithRoomNameRow">
+        <xs:element name="GymEquipmentWithRoomName" msprop:Generator_TableClassName="GymEquipmentWithRoomNameDataTable" msprop:Generator_TableVarName="tableGymEquipmentWithRoomName" msprop:Generator_RowChangedName="GymEquipmentWithRoomNameRowChanged" msprop:Generator_TablePropName="GymEquipmentWithRoomName" msprop:Generator_RowDeletingName="GymEquipmentWithRoomNameRowDeleting" msprop:Generator_RowChangingName="GymEquipmentWithRoomNameRowChanging" msprop:Generator_RowEvHandlerName="GymEquipmentWithRoomNameRowChangeEventHandler" msprop:Generator_RowDeletedName="GymEquipmentWithRoomNameRowDeleted" msprop:Generator_RowClassName="GymEquipmentWithRoomNameRow" msprop:Generator_UserTableName="GymEquipmentWithRoomName" msprop:Generator_RowEvArgName="GymEquipmentWithRoomNameRowChangeEvent">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymEquipmentId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymEquipmentId" msprop:Generator_ColumnPropNameInRow="gymEquipmentId" msprop:Generator_ColumnPropNameInTable="gymEquipmentIdColumn" msprop:Generator_UserColumnName="gymEquipmentId" type="xs:int" />
@@ -684,7 +772,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymCustomer" msprop:Generator_TableClassName="GymCustomerDataTable" msprop:Generator_TableVarName="tableGymCustomer" msprop:Generator_RowChangedName="GymCustomerRowChanged" msprop:Generator_TablePropName="GymCustomer" msprop:Generator_RowDeletingName="GymCustomerRowDeleting" msprop:Generator_RowChangingName="GymCustomerRowChanging" msprop:Generator_RowEvHandlerName="GymCustomerRowChangeEventHandler" msprop:Generator_RowDeletedName="GymCustomerRowDeleted" msprop:Generator_RowClassName="GymCustomerRow" msprop:Generator_UserTableName="GymCustomer" msprop:Generator_RowEvArgName="GymCustomerRowChangeEvent">
+        <xs:element name="GymCustomer" msprop:Generator_TableClassName="GymCustomerDataTable" msprop:Generator_TableVarName="tableGymCustomer" msprop:Generator_TablePropName="GymCustomer" msprop:Generator_RowDeletingName="GymCustomerRowDeleting" msprop:Generator_RowChangingName="GymCustomerRowChanging" msprop:Generator_RowEvHandlerName="GymCustomerRowChangeEventHandler" msprop:Generator_RowDeletedName="GymCustomerRowDeleted" msprop:Generator_UserTableName="GymCustomer" msprop:Generator_RowChangedName="GymCustomerRowChanged" msprop:Generator_RowEvArgName="GymCustomerRowChangeEvent" msprop:Generator_RowClassName="GymCustomerRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymCustomerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymCustomerId" msprop:Generator_ColumnPropNameInRow="gymCustomerId" msprop:Generator_ColumnPropNameInTable="gymCustomerIdColumn" msprop:Generator_UserColumnName="gymCustomerId" type="xs:int" />
@@ -706,7 +794,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymCustomerWithTrainerName" msprop:Generator_TableClassName="GymCustomerWithTrainerNameDataTable" msprop:Generator_TableVarName="tableGymCustomerWithTrainerName" msprop:Generator_RowChangedName="GymCustomerWithTrainerNameRowChanged" msprop:Generator_TablePropName="GymCustomerWithTrainerName" msprop:Generator_RowDeletingName="GymCustomerWithTrainerNameRowDeleting" msprop:Generator_RowChangingName="GymCustomerWithTrainerNameRowChanging" msprop:Generator_RowEvHandlerName="GymCustomerWithTrainerNameRowChangeEventHandler" msprop:Generator_RowDeletedName="GymCustomerWithTrainerNameRowDeleted" msprop:Generator_RowClassName="GymCustomerWithTrainerNameRow" msprop:Generator_UserTableName="GymCustomerWithTrainerName" msprop:Generator_RowEvArgName="GymCustomerWithTrainerNameRowChangeEvent">
+        <xs:element name="GymCustomerWithTrainerName" msprop:Generator_TableClassName="GymCustomerWithTrainerNameDataTable" msprop:Generator_TableVarName="tableGymCustomerWithTrainerName" msprop:Generator_TablePropName="GymCustomerWithTrainerName" msprop:Generator_RowDeletingName="GymCustomerWithTrainerNameRowDeleting" msprop:Generator_RowChangingName="GymCustomerWithTrainerNameRowChanging" msprop:Generator_RowEvHandlerName="GymCustomerWithTrainerNameRowChangeEventHandler" msprop:Generator_RowDeletedName="GymCustomerWithTrainerNameRowDeleted" msprop:Generator_UserTableName="GymCustomerWithTrainerName" msprop:Generator_RowChangedName="GymCustomerWithTrainerNameRowChanged" msprop:Generator_RowEvArgName="GymCustomerWithTrainerNameRowChangeEvent" msprop:Generator_RowClassName="GymCustomerWithTrainerNameRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymCustomerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymCustomerId" msprop:Generator_ColumnPropNameInRow="gymCustomerId" msprop:Generator_ColumnPropNameInTable="gymCustomerIdColumn" msprop:Generator_UserColumnName="gymCustomerId" type="xs:int" />
@@ -734,7 +822,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymTrainerFullNames" msprop:Generator_TableClassName="GymTrainerFullNamesDataTable" msprop:Generator_TableVarName="tableGymTrainerFullNames" msprop:Generator_RowChangedName="GymTrainerFullNamesRowChanged" msprop:Generator_TablePropName="GymTrainerFullNames" msprop:Generator_RowDeletingName="GymTrainerFullNamesRowDeleting" msprop:Generator_RowChangingName="GymTrainerFullNamesRowChanging" msprop:Generator_RowEvHandlerName="GymTrainerFullNamesRowChangeEventHandler" msprop:Generator_RowDeletedName="GymTrainerFullNamesRowDeleted" msprop:Generator_RowClassName="GymTrainerFullNamesRow" msprop:Generator_UserTableName="GymTrainerFullNames" msprop:Generator_RowEvArgName="GymTrainerFullNamesRowChangeEvent">
+        <xs:element name="GymTrainerFullNames" msprop:Generator_TableClassName="GymTrainerFullNamesDataTable" msprop:Generator_TableVarName="tableGymTrainerFullNames" msprop:Generator_TablePropName="GymTrainerFullNames" msprop:Generator_RowDeletingName="GymTrainerFullNamesRowDeleting" msprop:Generator_RowChangingName="GymTrainerFullNamesRowChanging" msprop:Generator_RowEvHandlerName="GymTrainerFullNamesRowChangeEventHandler" msprop:Generator_RowDeletedName="GymTrainerFullNamesRowDeleted" msprop:Generator_UserTableName="GymTrainerFullNames" msprop:Generator_RowChangedName="GymTrainerFullNamesRowChanged" msprop:Generator_RowEvArgName="GymTrainerFullNamesRowChangeEvent" msprop:Generator_RowClassName="GymTrainerFullNamesRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymTrainerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymTrainerId" msprop:Generator_ColumnPropNameInRow="gymTrainerId" msprop:Generator_ColumnPropNameInTable="gymTrainerIdColumn" msprop:Generator_UserColumnName="gymTrainerId" type="xs:int" />
@@ -748,7 +836,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymExercisePlan" msprop:Generator_TableClassName="GymExercisePlanDataTable" msprop:Generator_TableVarName="tableGymExercisePlan" msprop:Generator_RowChangedName="GymExercisePlanRowChanged" msprop:Generator_TablePropName="GymExercisePlan" msprop:Generator_RowDeletingName="GymExercisePlanRowDeleting" msprop:Generator_RowChangingName="GymExercisePlanRowChanging" msprop:Generator_RowEvHandlerName="GymExercisePlanRowChangeEventHandler" msprop:Generator_RowDeletedName="GymExercisePlanRowDeleted" msprop:Generator_RowClassName="GymExercisePlanRow" msprop:Generator_UserTableName="GymExercisePlan" msprop:Generator_RowEvArgName="GymExercisePlanRowChangeEvent">
+        <xs:element name="GymExercisePlan" msprop:Generator_TableClassName="GymExercisePlanDataTable" msprop:Generator_TableVarName="tableGymExercisePlan" msprop:Generator_TablePropName="GymExercisePlan" msprop:Generator_RowDeletingName="GymExercisePlanRowDeleting" msprop:Generator_RowChangingName="GymExercisePlanRowChanging" msprop:Generator_RowEvHandlerName="GymExercisePlanRowChangeEventHandler" msprop:Generator_RowDeletedName="GymExercisePlanRowDeleted" msprop:Generator_UserTableName="GymExercisePlan" msprop:Generator_RowChangedName="GymExercisePlanRowChanged" msprop:Generator_RowEvArgName="GymExercisePlanRowChangeEvent" msprop:Generator_RowClassName="GymExercisePlanRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymExercisePlanId" msprop:Generator_ColumnVarNameInTable="columngymExercisePlanId" msprop:Generator_ColumnPropNameInRow="gymExercisePlanId" msprop:Generator_ColumnPropNameInTable="gymExercisePlanIdColumn" msprop:Generator_UserColumnName="gymExercisePlanId" type="xs:int" />
@@ -764,7 +852,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymExercisePlanParts" msprop:Generator_TableClassName="GymExercisePlanPartsDataTable" msprop:Generator_TableVarName="tableGymExercisePlanParts" msprop:Generator_RowChangedName="GymExercisePlanPartsRowChanged" msprop:Generator_TablePropName="GymExercisePlanParts" msprop:Generator_RowDeletingName="GymExercisePlanPartsRowDeleting" msprop:Generator_RowChangingName="GymExercisePlanPartsRowChanging" msprop:Generator_RowEvHandlerName="GymExercisePlanPartsRowChangeEventHandler" msprop:Generator_RowDeletedName="GymExercisePlanPartsRowDeleted" msprop:Generator_RowClassName="GymExercisePlanPartsRow" msprop:Generator_UserTableName="GymExercisePlanParts" msprop:Generator_RowEvArgName="GymExercisePlanPartsRowChangeEvent">
+        <xs:element name="GymExercisePlanParts" msprop:Generator_TableClassName="GymExercisePlanPartsDataTable" msprop:Generator_TableVarName="tableGymExercisePlanParts" msprop:Generator_TablePropName="GymExercisePlanParts" msprop:Generator_RowDeletingName="GymExercisePlanPartsRowDeleting" msprop:Generator_RowChangingName="GymExercisePlanPartsRowChanging" msprop:Generator_RowEvHandlerName="GymExercisePlanPartsRowChangeEventHandler" msprop:Generator_RowDeletedName="GymExercisePlanPartsRowDeleted" msprop:Generator_UserTableName="GymExercisePlanParts" msprop:Generator_RowChangedName="GymExercisePlanPartsRowChanged" msprop:Generator_RowEvArgName="GymExercisePlanPartsRowChangeEvent" msprop:Generator_RowClassName="GymExercisePlanPartsRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymExercisePlanId" msprop:Generator_ColumnVarNameInTable="columngymExercisePlanId" msprop:Generator_ColumnPropNameInRow="gymExercisePlanId" msprop:Generator_ColumnPropNameInTable="gymExercisePlanIdColumn" msprop:Generator_UserColumnName="gymExercisePlanId" type="xs:int" />
@@ -780,7 +868,7 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymSchedule" msprop:Generator_TableClassName="GymScheduleDataTable" msprop:Generator_TableVarName="tableGymSchedule" msprop:Generator_RowChangedName="GymScheduleRowChanged" msprop:Generator_TablePropName="GymSchedule" msprop:Generator_RowDeletingName="GymScheduleRowDeleting" msprop:Generator_RowChangingName="GymScheduleRowChanging" msprop:Generator_RowEvHandlerName="GymScheduleRowChangeEventHandler" msprop:Generator_RowDeletedName="GymScheduleRowDeleted" msprop:Generator_RowClassName="GymScheduleRow" msprop:Generator_UserTableName="GymSchedule" msprop:Generator_RowEvArgName="GymScheduleRowChangeEvent">
+        <xs:element name="GymSchedule" msprop:Generator_TableClassName="GymScheduleDataTable" msprop:Generator_TableVarName="tableGymSchedule" msprop:Generator_TablePropName="GymSchedule" msprop:Generator_RowDeletingName="GymScheduleRowDeleting" msprop:Generator_RowChangingName="GymScheduleRowChanging" msprop:Generator_RowEvHandlerName="GymScheduleRowChangeEventHandler" msprop:Generator_RowDeletedName="GymScheduleRowDeleted" msprop:Generator_UserTableName="GymSchedule" msprop:Generator_RowChangedName="GymScheduleRowChanged" msprop:Generator_RowEvArgName="GymScheduleRowChangeEvent" msprop:Generator_RowClassName="GymScheduleRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymScheduleId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymScheduleId" msprop:Generator_ColumnPropNameInRow="gymScheduleId" msprop:Generator_ColumnPropNameInTable="gymScheduleIdColumn" msprop:Generator_UserColumnName="gymScheduleId" type="xs:int" />
@@ -791,13 +879,56 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="GymScheduleAvailability" msprop:Generator_TableClassName="GymScheduleAvailabilityDataTable" msprop:Generator_TableVarName="tableGymScheduleAvailability" msprop:Generator_RowChangedName="GymScheduleAvailabilityRowChanged" msprop:Generator_TablePropName="GymScheduleAvailability" msprop:Generator_RowDeletingName="GymScheduleAvailabilityRowDeleting" msprop:Generator_RowChangingName="GymScheduleAvailabilityRowChanging" msprop:Generator_RowEvHandlerName="GymScheduleAvailabilityRowChangeEventHandler" msprop:Generator_RowDeletedName="GymScheduleAvailabilityRowDeleted" msprop:Generator_RowClassName="GymScheduleAvailabilityRow" msprop:Generator_UserTableName="GymScheduleAvailability" msprop:Generator_RowEvArgName="GymScheduleAvailabilityRowChangeEvent">
+        <xs:element name="GymScheduleAvailability" msprop:Generator_TableClassName="GymScheduleAvailabilityDataTable" msprop:Generator_TableVarName="tableGymScheduleAvailability" msprop:Generator_TablePropName="GymScheduleAvailability" msprop:Generator_RowDeletingName="GymScheduleAvailabilityRowDeleting" msprop:Generator_RowChangingName="GymScheduleAvailabilityRowChanging" msprop:Generator_RowEvHandlerName="GymScheduleAvailabilityRowChangeEventHandler" msprop:Generator_RowDeletedName="GymScheduleAvailabilityRowDeleted" msprop:Generator_UserTableName="GymScheduleAvailability" msprop:Generator_RowChangedName="GymScheduleAvailabilityRowChanged" msprop:Generator_RowEvArgName="GymScheduleAvailabilityRowChangeEvent" msprop:Generator_RowClassName="GymScheduleAvailabilityRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="gymEquipmentId" msprop:Generator_ColumnVarNameInTable="columngymEquipmentId" msprop:Generator_ColumnPropNameInRow="gymEquipmentId" msprop:Generator_ColumnPropNameInTable="gymEquipmentIdColumn" msprop:Generator_UserColumnName="gymEquipmentId" type="xs:int" />
               <xs:element name="gymTrainerId" msprop:Generator_ColumnVarNameInTable="columngymTrainerId" msprop:Generator_ColumnPropNameInRow="gymTrainerId" msprop:Generator_ColumnPropNameInTable="gymTrainerIdColumn" msprop:Generator_UserColumnName="gymTrainerId" type="xs:int" />
               <xs:element name="scheduleStartTime" msprop:Generator_ColumnVarNameInTable="columnscheduleStartTime" msprop:Generator_ColumnPropNameInRow="scheduleStartTime" msprop:Generator_ColumnPropNameInTable="scheduleStartTimeColumn" msprop:Generator_UserColumnName="scheduleStartTime" type="xs:duration" />
-              <xs:element name="gymScheduleId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymScheduleId" msprop:Generator_ColumnPropNameInRow="gymScheduleId" msprop:Generator_ColumnPropNameInTable="gymScheduleIdColumn" msprop:Generator_UserColumnName="gymScheduleId" type="xs:int" minOccurs="0" />
+              <xs:element name="Duration" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnDuration" msprop:Generator_ColumnPropNameInRow="Duration" msprop:Generator_ColumnPropNameInTable="DurationColumn" msprop:Generator_UserColumnName="Duration" type="xs:decimal" minOccurs="0" />
+              <xs:element name="ScheduleDate" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnScheduleDate" msprop:Generator_ColumnPropNameInRow="ScheduleDate" msprop:Generator_ColumnPropNameInTable="ScheduleDateColumn" msprop:Generator_UserColumnName="ScheduleDate" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1024" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="GymCustomerWithExercisePlan" msprop:Generator_TableClassName="GymCustomerWithExercisePlanDataTable" msprop:Generator_TableVarName="tableGymCustomerWithExercisePlan" msprop:Generator_TablePropName="GymCustomerWithExercisePlan" msprop:Generator_RowDeletingName="GymCustomerWithExercisePlanRowDeleting" msprop:Generator_RowChangingName="GymCustomerWithExercisePlanRowChanging" msprop:Generator_RowEvHandlerName="GymCustomerWithExercisePlanRowChangeEventHandler" msprop:Generator_RowDeletedName="GymCustomerWithExercisePlanRowDeleted" msprop:Generator_UserTableName="GymCustomerWithExercisePlan" msprop:Generator_RowChangedName="GymCustomerWithExercisePlanRowChanged" msprop:Generator_RowEvArgName="GymCustomerWithExercisePlanRowChangeEvent" msprop:Generator_RowClassName="GymCustomerWithExercisePlanRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="gymCustomerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymCustomerId" msprop:Generator_ColumnPropNameInRow="gymCustomerId" msprop:Generator_ColumnPropNameInTable="gymCustomerIdColumn" msprop:Generator_UserColumnName="gymCustomerId" type="xs:int" />
+              <xs:element name="gymExercisePlanId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymExercisePlanId" msprop:Generator_ColumnPropNameInRow="gymExercisePlanId" msprop:Generator_ColumnPropNameInTable="gymExercisePlanIdColumn" msprop:Generator_UserColumnName="gymExercisePlanId" type="xs:int" />
+              <xs:element name="gymExercisePlanDescription" msprop:Generator_ColumnVarNameInTable="columngymExercisePlanDescription" msprop:Generator_ColumnPropNameInRow="gymExercisePlanDescription" msprop:Generator_ColumnPropNameInTable="gymExercisePlanDescriptionColumn" msprop:Generator_UserColumnName="gymExercisePlanDescription">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="500" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="gymCustomerName" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columngymCustomerName" msprop:Generator_ColumnPropNameInRow="gymCustomerName" msprop:Generator_ColumnPropNameInTable="gymCustomerNameColumn" msprop:Generator_UserColumnName="gymCustomerName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="101" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="GymCustomerWithoutExercisePlan" msprop:Generator_TableClassName="GymCustomerWithoutExercisePlanDataTable" msprop:Generator_TableVarName="tableGymCustomerWithoutExercisePlan" msprop:Generator_TablePropName="GymCustomerWithoutExercisePlan" msprop:Generator_RowDeletingName="GymCustomerWithoutExercisePlanRowDeleting" msprop:Generator_RowChangingName="GymCustomerWithoutExercisePlanRowChanging" msprop:Generator_RowEvHandlerName="GymCustomerWithoutExercisePlanRowChangeEventHandler" msprop:Generator_RowDeletedName="GymCustomerWithoutExercisePlanRowDeleted" msprop:Generator_UserTableName="GymCustomerWithoutExercisePlan" msprop:Generator_RowChangedName="GymCustomerWithoutExercisePlanRowChanged" msprop:Generator_RowEvArgName="GymCustomerWithoutExercisePlanRowChangeEvent" msprop:Generator_RowClassName="GymCustomerWithoutExercisePlanRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="gymCustomerId" msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnVarNameInTable="columngymCustomerId" msprop:Generator_ColumnPropNameInRow="gymCustomerId" msprop:Generator_ColumnPropNameInTable="gymCustomerIdColumn" msprop:Generator_UserColumnName="gymCustomerId" type="xs:int" />
+              <xs:element name="gymCustomerName" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columngymCustomerName" msprop:Generator_ColumnPropNameInRow="gymCustomerName" msprop:Generator_ColumnPropNameInTable="gymCustomerNameColumn" msprop:Generator_UserColumnName="gymCustomerName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="101" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -847,6 +978,15 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
       <xs:selector xpath=".//mstns:GymSchedule" />
       <xs:field xpath="mstns:gymScheduleId" />
     </xs:unique>
+    <xs:unique name="GymCustomerWithExercisePlan_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:GymCustomerWithExercisePlan" />
+      <xs:field xpath="mstns:gymCustomerId" />
+      <xs:field xpath="mstns:gymExercisePlanId" />
+    </xs:unique>
+    <xs:unique name="GymCustomerWithoutExercisePlan_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:GymCustomerWithoutExercisePlan" />
+      <xs:field xpath="mstns:gymCustomerId" />
+    </xs:unique>
     <xs:keyref name="FK_GymRoom_GymTrainer" refer="Constraint1" msdata:ConstraintOnly="true">
       <xs:selector xpath=".//mstns:GymTrainer" />
       <xs:field xpath="mstns:gymRoomId" />
@@ -854,14 +994,14 @@ WHERE GymSchedule.gymScheduleId IS NULL AND GymEquipmentTrainerScheduleCombinati
   </xs:element>
   <xs:annotation>
     <xs:appinfo>
-      <msdata:Relationship name="GymRoom_GymEquipment" msdata:parent="GymRoom" msdata:child="GymEquipment" msdata:parentkey="gymRoomId" msdata:childkey="gymRoomId" msprop:Generator_UserChildTable="GymEquipment" msprop:Generator_ChildPropName="GetGymEquipmentRows" msprop:Generator_UserRelationName="GymRoom_GymEquipment" msprop:Generator_ParentPropName="GymRoomRow" msprop:Generator_RelationVarName="relationGymRoom_GymEquipment" msprop:Generator_UserParentTable="GymRoom" />
-      <msdata:Relationship name="GymTrainer_GymCustomer" msdata:parent="GymTrainer" msdata:child="GymCustomer" msdata:parentkey="gymTrainerId" msdata:childkey="gymTrainerId" msprop:Generator_UserChildTable="GymCustomer" msprop:Generator_ChildPropName="GetGymCustomerRows" msprop:Generator_UserRelationName="GymTrainer_GymCustomer" msprop:Generator_RelationVarName="relationGymTrainer_GymCustomer" msprop:Generator_UserParentTable="GymTrainer" msprop:Generator_ParentPropName="GymTrainerRow" />
-      <msdata:Relationship name="GymTrainer_GymExercisePlan" msdata:parent="GymTrainer" msdata:child="GymExercisePlan" msdata:parentkey="gymTrainerId" msdata:childkey="gymTrainerId" msprop:Generator_UserChildTable="GymExercisePlan" msprop:Generator_ChildPropName="GetGymExercisePlanRows" msprop:Generator_UserRelationName="GymTrainer_GymExercisePlan" msprop:Generator_RelationVarName="relationGymTrainer_GymExercisePlan" msprop:Generator_UserParentTable="GymTrainer" msprop:Generator_ParentPropName="GymTrainerRow" />
-      <msdata:Relationship name="GymCustomer_GymExercisePlan" msdata:parent="GymCustomer" msdata:child="GymExercisePlan" msdata:parentkey="gymCustomerId" msdata:childkey="gymCustomerId" msprop:Generator_UserChildTable="GymExercisePlan" msprop:Generator_ChildPropName="GetGymExercisePlanRows" msprop:Generator_UserRelationName="GymCustomer_GymExercisePlan" msprop:Generator_RelationVarName="relationGymCustomer_GymExercisePlan" msprop:Generator_UserParentTable="GymCustomer" msprop:Generator_ParentPropName="GymCustomerRow" />
-      <msdata:Relationship name="GymExercisePlan_GymExercisePlanParts" msdata:parent="GymExercisePlan" msdata:child="GymExercisePlanParts" msdata:parentkey="gymExercisePlanId" msdata:childkey="gymExercisePlanId" msprop:Generator_UserChildTable="GymExercisePlanParts" msprop:Generator_ChildPropName="GetGymExercisePlanPartsRows" msprop:Generator_UserRelationName="GymExercisePlan_GymExercisePlanParts" msprop:Generator_RelationVarName="relationGymExercisePlan_GymExercisePlanParts" msprop:Generator_UserParentTable="GymExercisePlan" msprop:Generator_ParentPropName="GymExercisePlanRow" />
-      <msdata:Relationship name="GymEquipment_GymExercisePlanParts" msdata:parent="GymEquipment" msdata:child="GymExercisePlanParts" msdata:parentkey="gymEquipmentId" msdata:childkey="gymEquipmentId" msprop:Generator_UserChildTable="GymExercisePlanParts" msprop:Generator_ChildPropName="GetGymExercisePlanPartsRows" msprop:Generator_UserRelationName="GymEquipment_GymExercisePlanParts" msprop:Generator_RelationVarName="relationGymEquipment_GymExercisePlanParts" msprop:Generator_UserParentTable="GymEquipment" msprop:Generator_ParentPropName="GymEquipmentRow" />
-      <msdata:Relationship name="GymTrainer_GymSchedule" msdata:parent="GymTrainer" msdata:child="GymSchedule" msdata:parentkey="gymTrainerId" msdata:childkey="gymTrainerId" msprop:Generator_UserChildTable="GymSchedule" msprop:Generator_ChildPropName="GetGymScheduleRows" msprop:Generator_UserRelationName="GymTrainer_GymSchedule" msprop:Generator_RelationVarName="relationGymTrainer_GymSchedule" msprop:Generator_UserParentTable="GymTrainer" msprop:Generator_ParentPropName="GymTrainerRow" />
-      <msdata:Relationship name="GymEquipment_GymSchedule" msdata:parent="GymEquipment" msdata:child="GymSchedule" msdata:parentkey="gymEquipmentId" msdata:childkey="gymEquipmentId" msprop:Generator_UserChildTable="GymSchedule" msprop:Generator_ChildPropName="GetGymScheduleRows" msprop:Generator_UserRelationName="GymEquipment_GymSchedule" msprop:Generator_RelationVarName="relationGymEquipment_GymSchedule" msprop:Generator_UserParentTable="GymEquipment" msprop:Generator_ParentPropName="GymEquipmentRow" />
+      <msdata:Relationship name="GymRoom_GymEquipment" msdata:parent="GymRoom" msdata:child="GymEquipment" msdata:parentkey="gymRoomId" msdata:childkey="gymRoomId" msprop:Generator_UserChildTable="GymEquipment" msprop:Generator_ChildPropName="GetGymEquipmentRows" msprop:Generator_UserRelationName="GymRoom_GymEquipment" msprop:Generator_RelationVarName="relationGymRoom_GymEquipment" msprop:Generator_UserParentTable="GymRoom" msprop:Generator_ParentPropName="GymRoomRow" />
+      <msdata:Relationship name="GymTrainer_GymCustomer" msdata:parent="GymTrainer" msdata:child="GymCustomer" msdata:parentkey="gymTrainerId" msdata:childkey="gymTrainerId" msprop:Generator_UserChildTable="GymCustomer" msprop:Generator_ChildPropName="GetGymCustomerRows" msprop:Generator_UserRelationName="GymTrainer_GymCustomer" msprop:Generator_ParentPropName="GymTrainerRow" msprop:Generator_RelationVarName="relationGymTrainer_GymCustomer" msprop:Generator_UserParentTable="GymTrainer" />
+      <msdata:Relationship name="GymTrainer_GymExercisePlan" msdata:parent="GymTrainer" msdata:child="GymExercisePlan" msdata:parentkey="gymTrainerId" msdata:childkey="gymTrainerId" msprop:Generator_UserChildTable="GymExercisePlan" msprop:Generator_ChildPropName="GetGymExercisePlanRows" msprop:Generator_UserRelationName="GymTrainer_GymExercisePlan" msprop:Generator_ParentPropName="GymTrainerRow" msprop:Generator_RelationVarName="relationGymTrainer_GymExercisePlan" msprop:Generator_UserParentTable="GymTrainer" />
+      <msdata:Relationship name="GymCustomer_GymExercisePlan" msdata:parent="GymCustomer" msdata:child="GymExercisePlan" msdata:parentkey="gymCustomerId" msdata:childkey="gymCustomerId" msprop:Generator_UserChildTable="GymExercisePlan" msprop:Generator_ChildPropName="GetGymExercisePlanRows" msprop:Generator_UserRelationName="GymCustomer_GymExercisePlan" msprop:Generator_ParentPropName="GymCustomerRow" msprop:Generator_RelationVarName="relationGymCustomer_GymExercisePlan" msprop:Generator_UserParentTable="GymCustomer" />
+      <msdata:Relationship name="GymExercisePlan_GymExercisePlanParts" msdata:parent="GymExercisePlan" msdata:child="GymExercisePlanParts" msdata:parentkey="gymExercisePlanId" msdata:childkey="gymExercisePlanId" msprop:Generator_UserChildTable="GymExercisePlanParts" msprop:Generator_ChildPropName="GetGymExercisePlanPartsRows" msprop:Generator_UserRelationName="GymExercisePlan_GymExercisePlanParts" msprop:Generator_ParentPropName="GymExercisePlanRow" msprop:Generator_RelationVarName="relationGymExercisePlan_GymExercisePlanParts" msprop:Generator_UserParentTable="GymExercisePlan" />
+      <msdata:Relationship name="GymEquipment_GymExercisePlanParts" msdata:parent="GymEquipment" msdata:child="GymExercisePlanParts" msdata:parentkey="gymEquipmentId" msdata:childkey="gymEquipmentId" msprop:Generator_UserChildTable="GymExercisePlanParts" msprop:Generator_ChildPropName="GetGymExercisePlanPartsRows" msprop:Generator_UserRelationName="GymEquipment_GymExercisePlanParts" msprop:Generator_ParentPropName="GymEquipmentRow" msprop:Generator_RelationVarName="relationGymEquipment_GymExercisePlanParts" msprop:Generator_UserParentTable="GymEquipment" />
+      <msdata:Relationship name="GymTrainer_GymSchedule" msdata:parent="GymTrainer" msdata:child="GymSchedule" msdata:parentkey="gymTrainerId" msdata:childkey="gymTrainerId" msprop:Generator_UserChildTable="GymSchedule" msprop:Generator_ChildPropName="GetGymScheduleRows" msprop:Generator_UserRelationName="GymTrainer_GymSchedule" msprop:Generator_ParentPropName="GymTrainerRow" msprop:Generator_RelationVarName="relationGymTrainer_GymSchedule" msprop:Generator_UserParentTable="GymTrainer" />
+      <msdata:Relationship name="GymEquipment_GymSchedule" msdata:parent="GymEquipment" msdata:child="GymSchedule" msdata:parentkey="gymEquipmentId" msdata:childkey="gymEquipmentId" msprop:Generator_UserChildTable="GymSchedule" msprop:Generator_ChildPropName="GetGymScheduleRows" msprop:Generator_UserRelationName="GymEquipment_GymSchedule" msprop:Generator_ParentPropName="GymEquipmentRow" msprop:Generator_RelationVarName="relationGymEquipment_GymSchedule" msprop:Generator_UserParentTable="GymEquipment" />
     </xs:appinfo>
   </xs:annotation>
 </xs:schema>

@@ -30,6 +30,8 @@ namespace GymManagementSystem
         private GymEquipmentWithRoomNameTableAdapter equipmentWithRoomNameTableAdapter;
         private GymCustomerWithTrainerNameTableAdapter customerWithTrainerNameTableAdapter;
         private GymTrainerFullNamesTableAdapter trainerFullNamesTableAdapter;
+        private GymCustomerWithExercisePlanTableAdapter customerWithExercisePlanTableAdapter;
+        private GymCustomerWithoutExercisePlanTableAdapter customerWithoutExercisePlanTableAdapter;
 
         public MainWindow()
         {
@@ -46,8 +48,11 @@ namespace GymManagementSystem
             equipmentWithRoomNameTableAdapter = new GymEquipmentWithRoomNameTableAdapter();
             customerWithTrainerNameTableAdapter = new GymCustomerWithTrainerNameTableAdapter();
             trainerFullNamesTableAdapter = new GymTrainerFullNamesTableAdapter();
+            customerWithExercisePlanTableAdapter = new GymCustomerWithExercisePlanTableAdapter();
+            customerWithoutExercisePlanTableAdapter = new GymCustomerWithoutExercisePlanTableAdapter();
+
             RefreshAllDataTables();
-            MenuManagementView_Click(sender, e);            
+            MenuManagementView_Click(sender, e);
         }
 
         private void RefreshAllDataTables()
@@ -78,6 +83,7 @@ namespace GymManagementSystem
             trainerFullNamesTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymTrainerFullNames);
             // We're about to re-populate these controls from data source, so must make sure an item isn't selected.
             cmbBxAddCustomerAssignedTrainer.SelectedIndex = -1;
+            cmbBxExercisePlanTrainer.SelectedIndex = -1;
 
             // Get Gym Trainer list from data set, then make it the ItemsSource for our combo boxes. 
             var cmbBxTrainerData = gymManagementSystemDatabaseDataSet.GymTrainerFullNames.ToList();
@@ -200,6 +206,28 @@ namespace GymManagementSystem
             txtBxAddCustomerFirstName.Text = "";
             txtBxAddCustomerLastName.Text = "";
             txtBxAddEquipmentDescription.Focus();
+        }
+
+        private void BtnExercisePlansGetCustomerLists_Click(object sender, RoutedEventArgs e)
+        {
+            if (cmbBxExercisePlanTrainer.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please select a trainer from the drop-down first.", "Not Trainer Selected", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else
+            {
+                try
+                {
+                    int trainerId = Int32.Parse(cmbBxExercisePlanTrainer.SelectedValue.ToString());
+                    customerWithExercisePlanTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymCustomerWithExercisePlan, trainerId);
+                    customerWithoutExercisePlanTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymCustomerWithoutExercisePlan, trainerId);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error getting customer lists for trainer.\n\nException message: {ex.Message}",
+                        "Error Populating Customer Lists", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void MenuManagementView_Click(object sender, RoutedEventArgs e) // Sets the proper tabs to be viewable for Management
