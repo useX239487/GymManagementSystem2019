@@ -12,7 +12,6 @@ namespace GymManagementSystem
         private int gymTrainerId;
         private string gymTrainerFirstName;
         private string gymTrainerLastName;
-        private string gymTrainerStartTime;
         private int gymRoomId;
         private readonly int gymTrainerMaxHours = 8;
 
@@ -63,14 +62,6 @@ namespace GymManagementSystem
                     throw new Exception("Trainer last name cannot be more than 50 characters.");
                 else
                     gymTrainerLastName = value.Trim();
-            }
-        }
-        public string GymTrainerStartTime
-        {
-            get { return gymTrainerStartTime; }
-            set
-            {
-                gymTrainerStartTime = value;
             }
         }
 

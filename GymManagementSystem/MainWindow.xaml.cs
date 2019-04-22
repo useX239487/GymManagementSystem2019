@@ -23,10 +23,13 @@ namespace GymManagementSystem
     public partial class MainWindow : Window
     {
         private GymManagementSystemDatabaseDataSet gymManagementSystemDatabaseDataSet;
-        private GymManagementSystemDatabaseDataSetTableAdapters.GymRoomTableAdapter gymManagementSystemDatabaseDataSetGymRoomTableAdapter;
-        private GymManagementSystemDatabaseDataSetTableAdapters.GymTrainerTableAdapter gymManagementSystemDatabaseDataSetGymTrainerTableAdapter;
-        private GymManagementSystemDatabaseDataSetTableAdapters.GymTrainerWithRoomNameTableAdapter gymManagementSystemDataSetGymTrainerWithRoomNameTableAdapter;
-        private GymManagementSystemDatabaseDataSetTableAdapters.GymEquipmentWithRoomNameTableAdapter gymManagementSystemDatabaseDataSetGymEquipmentWithRoomNameTableAdapter;
+        private GymRoomTableAdapter roomTableAdapter;
+        private GymTrainerTableAdapter trainerTableAdapter;
+        private GymCustomerTableAdapter customerTableAdapter;
+        private GymTrainerWithRoomNameTableAdapter trainerWithRoomNameTableAdapter;
+        private GymEquipmentWithRoomNameTableAdapter equipmentWithRoomNameTableAdapter;
+        private GymCustomerWithTrainerNameTableAdapter customerWithTrainerNameTableAdapter;
+        private GymTrainerFullNamesTableAdapter trainerFullNamesTableAdapter;
 
         public MainWindow()
         {
@@ -35,13 +38,16 @@ namespace GymManagementSystem
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            gymManagementSystemDatabaseDataSet = ((GymManagementSystem.GymManagementSystemDatabaseDataSet)(this.FindResource("gymManagementSystemDatabaseDataSet")));
-            gymManagementSystemDatabaseDataSetGymRoomTableAdapter = new GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters.GymRoomTableAdapter();
-            gymManagementSystemDatabaseDataSetGymTrainerTableAdapter = new GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters.GymTrainerTableAdapter();
-            gymManagementSystemDataSetGymTrainerWithRoomNameTableAdapter = new GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters.GymTrainerWithRoomNameTableAdapter();
-            gymManagementSystemDatabaseDataSetGymEquipmentWithRoomNameTableAdapter = new GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters.GymEquipmentWithRoomNameTableAdapter();
+            gymManagementSystemDatabaseDataSet = ((GymManagementSystemDatabaseDataSet)(this.FindResource("gymManagementSystemDatabaseDataSet")));
+            roomTableAdapter = new GymRoomTableAdapter();
+            trainerTableAdapter = new GymTrainerTableAdapter();
+            customerTableAdapter = new GymCustomerTableAdapter();
+            trainerWithRoomNameTableAdapter = new GymTrainerWithRoomNameTableAdapter();
+            equipmentWithRoomNameTableAdapter = new GymEquipmentWithRoomNameTableAdapter();
+            customerWithTrainerNameTableAdapter = new GymCustomerWithTrainerNameTableAdapter();
+            trainerFullNamesTableAdapter = new GymTrainerFullNamesTableAdapter();
             RefreshAllDataTables();
-            MenuManagementView_Click(sender, e);
+            MenuManagementView_Click(sender, e);            
         }
 
         private void RefreshAllDataTables()
@@ -49,11 +55,12 @@ namespace GymManagementSystem
             RefreshGymRoomsData();
             RefreshGymTrainerData();
             RefreshGymEquipmentData();
+            RefreshGymCustomerData();
         }
 
         private void RefreshGymRoomsData()
         {
-            gymManagementSystemDatabaseDataSetGymRoomTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymRoom);
+            roomTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymRoom);
 
             // We're about to re-populate these controls from data source, so must make sure an item isn't selected.
             cmbBxAddTrainerAssignedRoom.SelectedIndex = -1; 
@@ -67,12 +74,25 @@ namespace GymManagementSystem
 
         private void RefreshGymTrainerData()
         {
-            gymManagementSystemDataSetGymTrainerWithRoomNameTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymTrainerWithRoomName);
+            trainerWithRoomNameTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymTrainerWithRoomName);
+            trainerFullNamesTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymTrainerFullNames);
+            // We're about to re-populate these controls from data source, so must make sure an item isn't selected.
+            cmbBxAddCustomerAssignedTrainer.SelectedIndex = -1;
+
+            // Get Gym Trainer list from data set, then make it the ItemsSource for our combo boxes. 
+            var cmbBxTrainerData = gymManagementSystemDatabaseDataSet.GymTrainerFullNames.ToList();
+            cmbBxAddCustomerAssignedTrainer.ItemsSource = cmbBxTrainerData;
+            cmbBxExercisePlanTrainer.ItemsSource = cmbBxTrainerData;
+        }
+
+        private void RefreshGymCustomerData()
+        {
+            customerWithTrainerNameTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymCustomerWithTrainerName);
         }
 
         private void RefreshGymEquipmentData()
         {
-            gymManagementSystemDatabaseDataSetGymEquipmentWithRoomNameTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymEquipmentWithRoomName);
+            equipmentWithRoomNameTableAdapter.Fill(gymManagementSystemDatabaseDataSet.GymEquipmentWithRoomName);
         }
 
         private void BtnNewGymRoomAdd_Click(object sender, RoutedEventArgs e)
@@ -159,12 +179,36 @@ namespace GymManagementSystem
             txtBxAddEquipmentDescription.Focus();
         }
 
+        private void BtnNewCustomerAdd_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                new GymCustomer(txtBxAddCustomerFirstName.Text, txtBxAddCustomerLastName.Text, 
+                    Int32.Parse(cmbBxAddCustomerAssignedTrainer.SelectedValue.ToString()));
+                BtnNewCustomerClear_Click(sender, e);
+                RefreshGymCustomerData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error while trying to add new customer.\n\nException message: {ex.Message}\n\nOperation aborted.",
+                    "Error Creating Gym Customer", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnNewCustomerClear_Click(object sender, RoutedEventArgs e)
+        {
+            txtBxAddCustomerFirstName.Text = "";
+            txtBxAddCustomerLastName.Text = "";
+            txtBxAddEquipmentDescription.Focus();
+        }
+
         private void MenuManagementView_Click(object sender, RoutedEventArgs e) // Sets the proper tabs to be viewable for Management
         {
             menuManagementView.IsChecked = true;
             menuTrainerView.IsChecked = false;
             menuCustomerView.IsChecked = false;
-            menuTools.Visibility = Visibility.Visible;
+            menuAdminView.IsChecked = false;
+            menuTools.Visibility = Visibility.Hidden;
             tabControlMain.SelectedIndex = 0;
             tabManagementCustomers.Visibility = Visibility.Visible;
             tabManagementTrainers.Visibility = Visibility.Visible;
@@ -185,6 +229,7 @@ namespace GymManagementSystem
             menuTrainerView.IsChecked = true;
             menuManagementView.IsChecked = false;
             menuCustomerView.IsChecked = false;
+            menuAdminView.IsChecked = false;
             menuTools.Visibility = Visibility.Hidden;
             tabControlMain.SelectedIndex = 4;
             tabTrainerExercisePlans.Visibility = Visibility.Visible;
@@ -206,6 +251,7 @@ namespace GymManagementSystem
             menuCustomerView.IsChecked = true;
             menuManagementView.IsChecked = false;
             menuTrainerView.IsChecked = false;
+            menuAdminView.IsChecked = false;
             menuTools.Visibility = Visibility.Hidden;
             tabControlMain.SelectedIndex = 5;
             tabCustomerSchedule.Visibility = Visibility.Visible;
@@ -222,7 +268,29 @@ namespace GymManagementSystem
             tabTrainerExercisePlans.Width = 0;
         }
 
-        private void MenuGenerateSeedData_Click(object sender, RoutedEventArgs e)
+        private void MenuAdminView_Click(object sender, RoutedEventArgs e)
+        {
+            menuCustomerView.IsChecked = false;
+            menuManagementView.IsChecked = false;
+            menuTrainerView.IsChecked = false;
+            menuAdminView.IsChecked = true;
+            menuTools.Visibility = Visibility.Visible;
+            tabControlMain.SelectedIndex = 0;
+            tabCustomerSchedule.Visibility = Visibility.Visible;
+            tabManagementCustomers.Visibility = Visibility.Visible;
+            tabManagementTrainers.Visibility = Visibility.Visible;
+            tabManagementRooms.Visibility = Visibility.Visible;
+            tabManagementEquipment.Visibility = Visibility.Visible;
+            tabTrainerExercisePlans.Visibility = Visibility.Visible;
+            tabCustomerSchedule.Width = Double.NaN;
+            tabManagementCustomers.Width = Double.NaN;
+            tabManagementTrainers.Width = Double.NaN;
+            tabManagementRooms.Width = Double.NaN;
+            tabManagementEquipment.Width = Double.NaN;
+            tabTrainerExercisePlans.Width = Double.NaN;
+        }
+
+        private void MenuGenerateFakeData_Click(object sender, RoutedEventArgs e)
         {
             new GymRoom("Free Weight Room", "Contains free weights");
             new GymRoom("Aerobics Machine Room", "Contains aerobics machines");
@@ -248,6 +316,7 @@ namespace GymManagementSystem
             new GymEquipment("Leg Adduction Machine", 3);
             new GymEquipment("Lat Pull Down Machine", 3);
             new GymEquipment("Pec Deck Machine", 3);
+            new GymCustomer("Andy", "Lopez", 1);
             RefreshAllDataTables();
         }
 
@@ -261,5 +330,7 @@ namespace GymManagementSystem
             roomTableAdapter.DeleteAllEntries();
             RefreshAllDataTables();
         }
+
+        
     }
 }

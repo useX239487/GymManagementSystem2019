@@ -12,6 +12,7 @@
         <CollectionViewSource x:Key="gymRoomViewSource" Source="{Binding GymRoom, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
         <CollectionViewSource x:Key="gymTrainerViewSource" Source="{Binding GymTrainerWithRoomName, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
         <CollectionViewSource x:Key="gymEquipmentWithRoomNameViewSource" Source="{Binding GymEquipmentWithRoomName, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
+        <CollectionViewSource x:Key="gymCustomerWithTrainerNameViewSource" Source="{Binding GymCustomerWithTrainerName, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
     </Window.Resources>
 
 
@@ -29,15 +30,43 @@
                     <MenuItem Name="menuManagementView" Header="_Management Menu" IsCheckable="true" IsChecked="True" Click="MenuManagementView_Click" />
                     <MenuItem Name="menuTrainerView" Header="_Trainer Menu" IsCheckable="true" Click="MenuTrainerView_Click" />
                     <MenuItem Name="menuCustomerView" Header="_Customer Menu" IsCheckable="true" Click="MenuCustomerView_Click" />
+                    <Separator />
+                    <MenuItem Name="menuAdminView"  Header="_Admin Menu" Click="MenuAdminView_Click" />
                 </MenuItem>
                 <MenuItem Name="menuTools" Header="_Tools">
-                    <MenuItem x:Name="menuGenerateSeedData" Header="_Generate Seed Data" Click="MenuGenerateSeedData_Click" />
+                    <MenuItem x:Name="menuGenerateSeedData" Header="_Generate Fake Data" Click="MenuGenerateFakeData_Click" />
                     <MenuItem x:Name="menuDeleteAllData" Header="_Delete All Data" Click="MenuDeleteAllData_Click" />
                 </MenuItem>
             </Menu>
             <TabControl x:Name="tabControlMain" Margin="0,0,0,0"  >
                 <TabItem x:Name="tabManagementCustomers" Header="Customers" >
-                    <Grid Background="#FFE5E5E5"/>
+                    <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymCustomerWithTrainerNameViewSource}">
+                        <GroupBox x:Name="grpBxAddNewCustomer" Header="New Customer" HorizontalAlignment="Left" Height="148" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="522">
+                            <Grid>
+                                <Label x:Name="lblAddCustomerFirstName" Content="First Name: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddCustomerFirstName" Height="23" Margin="88,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="50" HorizontalAlignment="Left" Width="130"/>
+
+                                <Label x:Name="lblAddCustomerLastName" Content="Last Name: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
+                                <TextBox x:Name="txtBxAddCustomerLastName" Height="23" Margin="88,39,0,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="50" HorizontalAlignment="Left" Width="130" />
+
+
+                                <Label x:Name="lblAddCustomerAssignedTrainer" Content="Assigned Trainer: " HorizontalAlignment="Left" Margin="223,10,0,0" VerticalAlignment="Top"/>
+                                <ComboBox x:Name="cmbBxAddCustomerAssignedTrainer" Height="23" Margin="0,13,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="169" ItemsSource="{Binding}" SelectedValuePath="gymTrainerId" DisplayMemberPath="gymTrainerName" />
+
+                                <Button x:Name="btnNewCustomerAdd" Content="Add" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="BtnNewCustomerAdd_Click"  />
+                                <Button x:Name="btnNewCustomerClear" Content="Clear" Margin="10,0,0,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75" Click="BtnNewCustomerClear_Click"  />
+
+                            </Grid>
+                        </GroupBox>
+                        <DataGrid x:Name="gymCustomerWithTrainerNameDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,163" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn x:Name="gymCustomerIdColumn" Binding="{Binding gymCustomerId}" Header="Customer Id" IsReadOnly="True" Width="SizeToCells" MinWidth="80"/>
+                                <DataGridTextColumn x:Name="gymCustomerFirstNameColumn" Binding="{Binding gymCustomerFirstName}" Header="First Name" IsReadOnly="True" Width="SizeToCells" MinWidth="70"/>
+                                <DataGridTextColumn x:Name="gymCustomerLastNameColumn" Binding="{Binding gymCustomerLastName}" Header="Last Name" IsReadOnly="True" Width="SizeToCells" MinWidth="70"/>
+                                <DataGridTextColumn x:Name="gymTrainerNameColumn" Binding="{Binding gymTrainerName}" Header="Trainer Name" IsReadOnly="True" Width="SizeToCells" MinWidth="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                 </TabItem>
                 <TabItem x:Name="tabManagementTrainers" Header="Trainers" >
                     <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymTrainerViewSource}">
@@ -128,7 +157,10 @@
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="tabTrainerExercisePlans" Header="Execise Plans" >
-                    <Grid Background="#FFE5E5E5"/>
+                    <Grid Background="#FFE5E5E5">
+                        <Label x:Name="lblExercisePlanTrainer" Content="Trainer Name: " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
+                        <ComboBox x:Name="cmbBxExercisePlanTrainer" Height="23" Margin="0,10,515,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="169" ItemsSource="{Binding}" SelectedValuePath="gymTrainerId" DisplayMemberPath="gymTrainerName" />
+                    </Grid>
                 </TabItem>
                 <TabItem x:Name="tabCustomerSchedule" Header="Schedule Training" >
                     <Grid Background="#FFE5E5E5"/>
