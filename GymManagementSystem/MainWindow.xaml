@@ -163,7 +163,7 @@
                         <Label x:Name="lblExercisePlanTrainer" Content="Trainer Name: " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
                         <ComboBox x:Name="cmbBxExercisePlanTrainer" Height="23" Margin="0,11,510.333,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="169" ItemsSource="{Binding}" SelectedValuePath="gymTrainerId" DisplayMemberPath="gymTrainerName" />
                         <Button x:Name="btnExercisePlansGetCustomerLists" Content="Get Customers" HorizontalAlignment="Left" Margin="282,11,0,0" VerticalAlignment="Top" Width="108" Click="BtnExercisePlansGetCustomerLists_Click"/>
-                        <GroupBox Name="grpBxCustomersWithoutPlan" Header="Customers Without Plans" HorizontalAlignment="Left" Height="232" Margin="10,39,0,0" VerticalAlignment="Top" Width="262">
+                        <GroupBox Name="grpBxCustomersWithoutPlan" Header="Customers Without Plans" Height="232" Margin="10,39,397.333,0" VerticalAlignment="Top">
                             <DataGrid x:Name="gymCustomerWithoutExercisePlanDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding Source={StaticResource gymCustomerWithoutExercisePlanViewSource}}" Margin="10,10,10,10" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn x:Name="gymCustomerIdColumn2" Binding="{Binding gymCustomerId}" Header="gym Customer Id" IsReadOnly="True" Width="SizeToCells" Visibility="Hidden" />
@@ -171,7 +171,7 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                         </GroupBox>
-                        <GroupBox Name="grpBxCustomersWithPlan" Header="Customers With Plans" HorizontalAlignment="Left" Height="232" Margin="277,39,0,0" VerticalAlignment="Top" Width="500">
+                        <GroupBox Name="grpBxCustomersWithPlan" Header="Customers With Plans" Height="232" Margin="397.333,39,10,0" VerticalAlignment="Top">
                             <DataGrid x:Name="gymCustomerWithExercisePlanDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,10" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn x:Name="gymCustomerNameColumn" Binding="{Binding gymCustomerName}" Header="Customer Name" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
