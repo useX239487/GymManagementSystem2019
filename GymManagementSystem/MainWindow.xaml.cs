@@ -196,17 +196,29 @@ namespace GymManagementSystem
 
         private void BtnNewTrainerAdd_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (cmbBxAddTrainerStartTime.SelectedIndex == -1)
             {
-                new GymTrainer(txtBxAddTrainerFirstName.Text, txtBxAddTrainerLastName.Text,
-                    cmbBxAddTrainerStartTime.Text, Int32.Parse(cmbBxAddTrainerAssignedRoom.SelectedValue.ToString()));
-                BtnNewTrainerClear_Click(sender, e);
-                RefreshGymTrainerData();
+                MessageBox.Show("Please select start time.", "No Start Time Selected", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (Exception ex)
+            else if (cmbBxAddTrainerAssignedRoom.SelectedIndex == -1)
             {
-                MessageBox.Show($"Error while trying to add new trainer.\n\nException message: {ex.Message}\n\nOperation aborted.",
-                    "Error Creating Gym Trainer", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Please select an assigned room.", "No Room Selected", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else
+            {
+                try
+                {
+                    new GymTrainer(txtBxAddTrainerFirstName.Text, txtBxAddTrainerLastName.Text,
+                        cmbBxAddTrainerStartTime.Text, Int32.Parse(cmbBxAddTrainerAssignedRoom.SelectedValue.ToString()));
+                    BtnNewTrainerClear_Click(sender, e);
+                    RefreshGymTrainerData();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error while trying to add new trainer.\n\nException message: {ex.Message}\n\nOperation aborted.",
+                        "Error Creating Gym Trainer", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
             }
         }
 
@@ -221,16 +233,23 @@ namespace GymManagementSystem
 
         private void BtnNewEquipmentAdd_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (cmbBxAddEquipmentAssignedRoom.SelectedIndex == -1)
             {
-                new GymEquipment(txtBxAddEquipmentDescription.Text, Int32.Parse(cmbBxAddEquipmentAssignedRoom.SelectedValue.ToString()));
-                BtnNewEquipmentClear_Click(sender, e);
-                RefreshGymEquipmentData();
+                MessageBox.Show("Please select an assigned room.", "No Room Selected", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Error while trying to add new equipment.\n\nException message: {ex.Message}\n\nOperation aborted.",
-                    "Error Creating Gym Equipment", MessageBoxButton.OK, MessageBoxImage.Error);
+                try
+                {
+                    new GymEquipment(txtBxAddEquipmentDescription.Text, Int32.Parse(cmbBxAddEquipmentAssignedRoom.SelectedValue.ToString()));
+                    BtnNewEquipmentClear_Click(sender, e);
+                    RefreshGymEquipmentData();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error while trying to add new equipment.\n\nException message: {ex.Message}\n\nOperation aborted.",
+                        "Error Creating Gym Equipment", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -323,6 +342,8 @@ namespace GymManagementSystem
                     new GymExercisePlan(txtBxAddExercisePlanDescription.Text, duration, trainerId, customerId);
                     PopulateExercisePlansCustomerLists(sender, e);
                     RefreshGymTrainerExercisePlans();
+
+                    txtBxAddExercisePlanDescription.Text = "";
                 }
                 catch (Exception ex)
                 {
@@ -335,12 +356,13 @@ namespace GymManagementSystem
 
         private void PopulateGymScheduleCustomerInformation(object sender, RoutedEventArgs e)
         {
+            datePickerGymScheduleCustomerPlanScheduleDate.SelectedDate = null;
+
             if (cmbBxGymScheduleCustomer.SelectedIndex == -1)
             {
                 txtBxGymScheduleCustomerTrainerName.Text = "";
                 txtBxGymScheduleCustomerPlanDescription.Text = "";
                 txtBxGymScheduleCustomerPlanDuration.Text = "";
-                datePickerGymScheduleCustomerPlanScheduleDate.SelectedDate = null;
             }
             else
             {

@@ -41,9 +41,9 @@ namespace GymManagementSystem
             set
             {
                 if (value.Trim().Length == 0) // Don't allow a name to be blank. 
-                    throw new Exception("Customer first name cannot be blank.");
+                    throw new Exception("Customer last name cannot be blank.");
                 else if (value.Trim().Length > 50)
-                    throw new Exception("Customer first name cannot be more than 50 characters.");
+                    throw new Exception("Customer last name cannot be more than 50 characters.");
                 else
                     gymCustomerLastName = value.Trim();
             }

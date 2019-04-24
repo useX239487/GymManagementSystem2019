@@ -62,6 +62,8 @@ namespace GymManagementSystem {
         
         private global::System.Data.DataRelation relationGymTrainer_GymSchedule;
         
+        private global::System.Data.DataRelation relationGymExercisePlan_GymSchedule;
+        
         private global::System.Data.SchemaSerializationMode _schemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -521,6 +523,7 @@ namespace GymManagementSystem {
             this.relationGymTrainer_GymExercisePlan = this.Relations["GymTrainer_GymExercisePlan"];
             this.relationGymCustomer_GymExercisePlan = this.Relations["GymCustomer_GymExercisePlan"];
             this.relationGymTrainer_GymSchedule = this.Relations["GymTrainer_GymSchedule"];
+            this.relationGymExercisePlan_GymSchedule = this.Relations["GymExercisePlan_GymSchedule"];
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -587,6 +590,10 @@ namespace GymManagementSystem {
                         this.tableGymTrainer.gymTrainerIdColumn}, new global::System.Data.DataColumn[] {
                         this.tableGymSchedule.gymTrainerIdColumn}, false);
             this.Relations.Add(this.relationGymTrainer_GymSchedule);
+            this.relationGymExercisePlan_GymSchedule = new global::System.Data.DataRelation("GymExercisePlan_GymSchedule", new global::System.Data.DataColumn[] {
+                        this.tableGymExercisePlan.gymExercisePlanIdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableGymSchedule.gymExercisePlanIdColumn}, false);
+            this.Relations.Add(this.relationGymExercisePlan_GymSchedule);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -3679,16 +3686,19 @@ namespace GymManagementSystem {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public GymScheduleRow AddGymScheduleRow(GymTrainerRow parentGymTrainerRowByGymTrainer_GymSchedule, System.DateTime gymScheduleStartDatetime, System.TimeSpan gymScheduleDuration, int gymExercisePlanId) {
+            public GymScheduleRow AddGymScheduleRow(GymTrainerRow parentGymTrainerRowByGymTrainer_GymSchedule, System.DateTime gymScheduleStartDatetime, System.TimeSpan gymScheduleDuration, GymExercisePlanRow parentGymExercisePlanRowByGymExercisePlan_GymSchedule) {
                 GymScheduleRow rowGymScheduleRow = ((GymScheduleRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         null,
                         null,
                         gymScheduleStartDatetime,
                         gymScheduleDuration,
-                        gymExercisePlanId};
+                        null};
                 if ((parentGymTrainerRowByGymTrainer_GymSchedule != null)) {
                     columnValuesArray[1] = parentGymTrainerRowByGymTrainer_GymSchedule[0];
+                }
+                if ((parentGymExercisePlanRowByGymExercisePlan_GymSchedule != null)) {
+                    columnValuesArray[4] = parentGymExercisePlanRowByGymExercisePlan_GymSchedule[0];
                 }
                 rowGymScheduleRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowGymScheduleRow);
@@ -5861,6 +5871,17 @@ namespace GymManagementSystem {
                     this.SetParentRow(value, this.Table.ParentRelations["GymCustomer_GymExercisePlan"]);
                 }
             }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public GymScheduleRow[] GetGymScheduleRows() {
+                if ((this.Table.ChildRelations["GymExercisePlan_GymSchedule"] == null)) {
+                    return new GymScheduleRow[0];
+                }
+                else {
+                    return ((GymScheduleRow[])(base.GetChildRows(this.Table.ChildRelations["GymExercisePlan_GymSchedule"])));
+                }
+            }
         }
         
         /// <summary>
@@ -5940,6 +5961,17 @@ namespace GymManagementSystem {
                 }
                 set {
                     this.SetParentRow(value, this.Table.ParentRelations["GymTrainer_GymSchedule"]);
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public GymExercisePlanRow GymExercisePlanRow {
+                get {
+                    return ((GymExercisePlanRow)(this.GetParentRow(this.Table.ParentRelations["GymExercisePlan_GymSchedule"])));
+                }
+                set {
+                    this.SetParentRow(value, this.Table.ParentRelations["GymExercisePlan_GymSchedule"]);
                 }
             }
         }
@@ -9863,21 +9895,24 @@ SELECT gymScheduleId, gymTrainerId, gymExercisePlanId, gymScheduleStartDatetime,
                 " = @ScheduleDate \r\n\t) AS v_GymSchedule_Trainer \r\nON v_GymTrainerScheduleCombinat" +
                 "ions.gymTrainerId = v_GymSchedule_Trainer.gymTrainerId \r\n\tAND \r\n\t( \r\n\t\t( v_GymTr" +
                 "ainerScheduleCombinations.scheduleStartTime >= CAST(v_GymSchedule_Trainer.gymSch" +
-                "eduleStartDatetime AS TIME) \r\n\t\tAND v_GymTrainerScheduleCombinations.scheduleSta" +
-                "rtTime < CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) ) \r\n\t\t\tOR ( " +
+                "eduleStartDatetime AS TIME) \r\n\t\t\tAND v_GymTrainerScheduleCombinations.scheduleSt" +
+                "artTime < CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) ) \r\n\t\tOR ( " +
                 "DATEADD(MINUTE, @Duration, v_GymTrainerScheduleCombinations.scheduleStartTime) >" +
-                "= CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS TIME) \r\n\t\tAND DATEADD(M" +
-                "INUTE, @Duration, v_GymTrainerScheduleCombinations.scheduleStartTime) < CAST(v_G" +
-                "ymSchedule_Trainer.gymScheduleEndDatetime AS TIME) )\r\n\t\t\tOR ( CAST(v_GymSchedule" +
+                " CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS TIME) \r\n\t\t\tAND DATEADD(M" +
+                "INUTE, @Duration, v_GymTrainerScheduleCombinations.scheduleStartTime) <= CAST(v_" +
+                "GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) )\r\n\t\tOR ( CAST(v_GymSchedule" +
                 "_Trainer.gymScheduleStartDatetime AS TIME) >= v_GymTrainerScheduleCombinations.s" +
-                "cheduleStartTime \r\n\t\tAND CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS " +
-                "TIME) < DATEADD(MINUTE, @Duration, v_GymTrainerScheduleCombinations.scheduleStar" +
-                "tTime) )\r\n\t\t\tOR ( CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) >= " +
-                "v_GymTrainerScheduleCombinations.scheduleStartTime \r\n\t\tAND CAST(v_GymSchedule_Tr" +
-                "ainer.gymScheduleEndDatetime AS TIME) < DATEADD(MINUTE, @Duration, v_GymTrainerS" +
-                "cheduleCombinations.scheduleStartTime) ) \r\n\t) \r\nWHERE v_GymSchedule_Trainer.gymS" +
-                "cheduleId IS NULL \r\n\tAND v_GymTrainerScheduleCombinations.gymTrainerId = @Traine" +
-                "rId";
+                "cheduleStartTime \r\n\t\t\tAND CAST(v_GymSchedule_Trainer.gymScheduleStartDatetime AS" +
+                " TIME) < DATEADD(MINUTE, @Duration, v_GymTrainerScheduleCombinations.scheduleSta" +
+                "rtTime) )\r\n\t\tOR ( CAST(v_GymSchedule_Trainer.gymScheduleEndDatetime AS TIME) > v" +
+                "_GymTrainerScheduleCombinations.scheduleStartTime \r\n\t\t\tAND CAST(v_GymSchedule_Tr" +
+                "ainer.gymScheduleEndDatetime AS TIME) <= DATEADD(MINUTE, @Duration, v_GymTrainer" +
+                "ScheduleCombinations.scheduleStartTime) ) \r\n\t) \r\nINNER JOIN GymTrainer\r\nON v_Gym" +
+                "TrainerScheduleCombinations.gymTrainerId = GymTrainer.gymTrainerId\r\nWHERE v_GymS" +
+                "chedule_Trainer.gymScheduleId IS NULL \r\n\tAND v_GymTrainerScheduleCombinations.gy" +
+                "mTrainerId = @TrainerId\r\n\tAND DATEADD(MINUTE, @Duration, v_GymTrainerScheduleCom" +
+                "binations.scheduleStartTime) <= DATEADD(HOUR, 8, GymTrainer.gymTrainerStartTime)" +
+                " ";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[0].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@ScheduleDate", global::System.Data.SqlDbType.VarChar, 1024, global::System.Data.ParameterDirection.Input, 0, 0, "", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._commandCollection[0].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Duration", global::System.Data.SqlDbType.Decimal, 0, global::System.Data.ParameterDirection.Input, 0, 0, "", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
@@ -10487,7 +10522,7 @@ WHERE        (GymCustomer.gymTrainerId = @TrainerId) AND (GymExercisePlan.gymExe
 GymCustomer.gymCustomerFirstName + ' ' + GymCustomer.gymCustomerLastName as gymCustomerName, GymExercisePlan.gymExercisePlanId, GymExercisePlan.gymExercisePlanDescription
 FROM   GymCustomer INNER JOIN
              GymExercisePlan ON GymCustomer.gymCustomerId = GymExercisePlan.gymCustomerId
-";
+ORDER BY GymCustomer.gymCustomerFirstName + ' ' + GymCustomer.gymCustomerLastName";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[1] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[1].Connection = this.Connection;
@@ -10879,6 +10914,15 @@ FROM   GymCustomer INNER JOIN
                     allChangedRows.AddRange(updatedRows);
                 }
             }
+            if ((this._gymExercisePlanTableAdapter != null)) {
+                global::System.Data.DataRow[] updatedRows = dataSet.GymExercisePlan.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
+                updatedRows = this.GetRealUpdatedRows(updatedRows, allAddedRows);
+                if (((updatedRows != null) 
+                            && (0 < updatedRows.Length))) {
+                    result = (result + this._gymExercisePlanTableAdapter.Update(updatedRows));
+                    allChangedRows.AddRange(updatedRows);
+                }
+            }
             if ((this._gymEquipmentTableAdapter != null)) {
                 global::System.Data.DataRow[] updatedRows = dataSet.GymEquipment.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
                 updatedRows = this.GetRealUpdatedRows(updatedRows, allAddedRows);
@@ -10894,15 +10938,6 @@ FROM   GymCustomer INNER JOIN
                 if (((updatedRows != null) 
                             && (0 < updatedRows.Length))) {
                     result = (result + this._gymTrainerFullNamesTableAdapter.Update(updatedRows));
-                    allChangedRows.AddRange(updatedRows);
-                }
-            }
-            if ((this._gymExercisePlanTableAdapter != null)) {
-                global::System.Data.DataRow[] updatedRows = dataSet.GymExercisePlan.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
-                updatedRows = this.GetRealUpdatedRows(updatedRows, allAddedRows);
-                if (((updatedRows != null) 
-                            && (0 < updatedRows.Length))) {
-                    result = (result + this._gymExercisePlanTableAdapter.Update(updatedRows));
                     allChangedRows.AddRange(updatedRows);
                 }
             }
@@ -10949,6 +10984,14 @@ FROM   GymCustomer INNER JOIN
                     allAddedRows.AddRange(addedRows);
                 }
             }
+            if ((this._gymExercisePlanTableAdapter != null)) {
+                global::System.Data.DataRow[] addedRows = dataSet.GymExercisePlan.Select(null, null, global::System.Data.DataViewRowState.Added);
+                if (((addedRows != null) 
+                            && (0 < addedRows.Length))) {
+                    result = (result + this._gymExercisePlanTableAdapter.Update(addedRows));
+                    allAddedRows.AddRange(addedRows);
+                }
+            }
             if ((this._gymEquipmentTableAdapter != null)) {
                 global::System.Data.DataRow[] addedRows = dataSet.GymEquipment.Select(null, null, global::System.Data.DataViewRowState.Added);
                 if (((addedRows != null) 
@@ -10962,14 +11005,6 @@ FROM   GymCustomer INNER JOIN
                 if (((addedRows != null) 
                             && (0 < addedRows.Length))) {
                     result = (result + this._gymTrainerFullNamesTableAdapter.Update(addedRows));
-                    allAddedRows.AddRange(addedRows);
-                }
-            }
-            if ((this._gymExercisePlanTableAdapter != null)) {
-                global::System.Data.DataRow[] addedRows = dataSet.GymExercisePlan.Select(null, null, global::System.Data.DataViewRowState.Added);
-                if (((addedRows != null) 
-                            && (0 < addedRows.Length))) {
-                    result = (result + this._gymExercisePlanTableAdapter.Update(addedRows));
                     allAddedRows.AddRange(addedRows);
                 }
             }
@@ -10999,14 +11034,6 @@ FROM   GymCustomer INNER JOIN
                     allChangedRows.AddRange(deletedRows);
                 }
             }
-            if ((this._gymExercisePlanTableAdapter != null)) {
-                global::System.Data.DataRow[] deletedRows = dataSet.GymExercisePlan.Select(null, null, global::System.Data.DataViewRowState.Deleted);
-                if (((deletedRows != null) 
-                            && (0 < deletedRows.Length))) {
-                    result = (result + this._gymExercisePlanTableAdapter.Update(deletedRows));
-                    allChangedRows.AddRange(deletedRows);
-                }
-            }
             if ((this._gymTrainerFullNamesTableAdapter != null)) {
                 global::System.Data.DataRow[] deletedRows = dataSet.GymTrainerFullNames.Select(null, null, global::System.Data.DataViewRowState.Deleted);
                 if (((deletedRows != null) 
@@ -11020,6 +11047,14 @@ FROM   GymCustomer INNER JOIN
                 if (((deletedRows != null) 
                             && (0 < deletedRows.Length))) {
                     result = (result + this._gymEquipmentTableAdapter.Update(deletedRows));
+                    allChangedRows.AddRange(deletedRows);
+                }
+            }
+            if ((this._gymExercisePlanTableAdapter != null)) {
+                global::System.Data.DataRow[] deletedRows = dataSet.GymExercisePlan.Select(null, null, global::System.Data.DataViewRowState.Deleted);
+                if (((deletedRows != null) 
+                            && (0 < deletedRows.Length))) {
+                    result = (result + this._gymExercisePlanTableAdapter.Update(deletedRows));
                     allChangedRows.AddRange(deletedRows);
                 }
             }
