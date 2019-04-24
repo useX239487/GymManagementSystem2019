@@ -161,28 +161,41 @@
                 <TabItem x:Name="tabTrainerExercisePlans" Header="Exercise Plans" >
                     <Grid Background="#FFE5E5E5" DataContext="{StaticResource gymCustomerWithExercisePlanViewSource}">
                         <Label x:Name="lblExercisePlanTrainer" Content="Trainer Name: " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-                        <ComboBox x:Name="cmbBxExercisePlanTrainer" Height="23" Margin="107,11,0,0" VerticalAlignment="Top" ItemsSource="{Binding}" SelectedValuePath="gymTrainerId" DisplayMemberPath="gymTrainerName" HorizontalAlignment="Left" Width="169" />
-                        <Button x:Name="btnExercisePlansGetCustomerLists" Content="Get Customers" Margin="282,11,0,0" VerticalAlignment="Top" Click="BtnExercisePlansGetCustomerLists_Click" HorizontalAlignment="Left" Width="108"/>
+                        <ComboBox x:Name="cmbBxExercisePlanTrainer" Height="23" Margin="107,11,0,0" VerticalAlignment="Top" SelectedValuePath="gymTrainerId" DisplayMemberPath="gymTrainerName" HorizontalAlignment="Left" Width="268" SelectionChanged="CmbBxExercisePlanTrainer_SelectionChanged" >
+                        </ComboBox>
                         <Grid Margin="0,39,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="5*" />
                                 <ColumnDefinition Width="5*" />
                             </Grid.ColumnDefinitions>
-                            <GroupBox Grid.Column="0" Name="grpBxCustomersWithoutPlan" Header="Customers Without Plans" Height="232" Margin="10,10,0,0" VerticalAlignment="Top">
-                                <DataGrid x:Name="gymCustomerWithoutExercisePlanDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding Source={StaticResource gymCustomerWithoutExercisePlanViewSource}}" Margin="10,10,10,10" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn x:Name="gymCustomerIdColumn2" Binding="{Binding gymCustomerId}" Header="gym Customer Id" IsReadOnly="True" Width="SizeToCells" Visibility="Hidden" />
-                                        <DataGridTextColumn x:Name="gymCustomerNameColumn1" Binding="{Binding gymCustomerName}" Header="Customer Name" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
+                            <GroupBox Grid.Column="0" Name="grpBxCustomersWithoutPlan" Header="Customers Without Plans" Margin="10,10,0,10">
+                                <Grid>
+                                    <DataGrid x:Name="gymCustomerWithoutExercisePlanDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding Source={StaticResource gymCustomerWithoutExercisePlanViewSource}}" Margin="10,10,10,100" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn x:Name="gymCustomerIdColumn2" Binding="{Binding gymCustomerId}" Header="gym Customer Id" IsReadOnly="True" Width="SizeToCells" Visibility="Hidden" />
+                                            <DataGridTextColumn x:Name="gymTrainerIdColumn3" Binding="{Binding gymTrainerId}" Header="gym Trainer Id" IsReadOnly="True" Width="SizeToCells" Visibility="Hidden" />
+                                            <DataGridTextColumn x:Name="gymCustomerNameColumn1" Binding="{Binding gymCustomerName}" Header="Customer Name" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Label x:Name="lblAddExercisePlanDescription" Content="Exercise Plan: " HorizontalAlignment="Left" Margin="10,0,0,69" VerticalAlignment="Bottom"/>
+                                    <TextBox x:Name="txtBxAddExercisePlanDescription" HorizontalAlignment="Left" Margin="94,0,0,38" TextWrapping="Wrap" Width="267" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Height="53" VerticalAlignment="Bottom"/>
+                                    <Label x:Name="lblExercisePlanAddDuration" Content="Plan Duration: " HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom"/>
+                                    <ComboBox x:Name="cmbBxAddExercisePlanDuration" Height="23" Margin="99,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="149">
+                                        <ComboBoxItem Content="30 Minutes"/>
+                                        <ComboBoxItem Content="60 Minutes"/>
+                                        <ComboBoxItem Content="90 Minutes"/>
+                                        <ComboBoxItem Content="120 Minutes"/>
+                                    </ComboBox>
+                                    <Button x:Name="btnAddExercisePlan" Content="Add Plan" Margin="253,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="108" Click="BtnAddExercisePlan_Click" Height="23"/>
+                                </Grid>
                             </GroupBox>
-                            <GroupBox Grid.Column="1" Name="grpBxCustomersWithPlan" Header="Customers With Plans" Height="232" Margin="0,10,10,0" VerticalAlignment="Top">
-                                <DataGrid x:Name="gymCustomerWithExercisePlanDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,10" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
+                            <GroupBox Grid.Column="1" Name="grpBxCustomersWithPlan" Header="Customers With Plans" Margin="0,10,10,10">
+                                <DataGrid x:Name="gymCustomerWithExercisePlanDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,100" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn x:Name="gymCustomerNameColumn" Binding="{Binding gymCustomerName}" Header="Customer Name" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
                                         <DataGridTextColumn x:Name="gymCustomerIdColumn1" Binding="{Binding gymCustomerId}" Header="gym Customer Id" IsReadOnly="True" Width="SizeToCells" Visibility="Hidden"/>
-                                        <DataGridTextColumn x:Name="gymExercisePlanIdColumn" Binding="{Binding gymExercisePlanId}" Header="Exercise Plan Id" IsReadOnly="True" Width="SizeToCells" MinWidth="95"/>
-                                        <DataGridTextColumn x:Name="gymExercisePlanDescriptionColumn" Binding="{Binding gymExercisePlanDescription}" Header="Plan Description" Width="SizeToCells" MinWidth="100"/>
+                                        <DataGridTextColumn x:Name="gymExercisePlanIdColumn" Binding="{Binding gymExercisePlanId}" Header="Exercise Plan Id" IsReadOnly="True" Width="SizeToCells" Visibility="Hidden"/>
+                                        <DataGridTextColumn x:Name="gymExercisePlanDescriptionColumn" Binding="{Binding gymExercisePlanDescription}" Header="Plan Description" Width="SizeToCells" MinWidth="200"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </GroupBox>
@@ -190,7 +203,21 @@
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="tabCustomerSchedule" Header="Schedule Training" >
-                    <Grid Background="#FFE5E5E5"/>
+                    <Grid Background="#FFE5E5E5">
+                        <Label x:Name="lblGymScheduleCustomer" Content="Customer Name: " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+                        <ComboBox x:Name="cmbBxGymScheduleCustomer" Height="23" Margin="123,11,0,0" VerticalAlignment="Top" SelectedValuePath="gymCustomerId" DisplayMemberPath="gymCustomerName" HorizontalAlignment="Left" Width="262" SelectionChanged="CmbBxGymScheduleCustomer_SelectionChanged" />
+                        <Label x:Name="lblGymScheduleCustomerTrainerName" Content="Trainer Name: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top" Width="101" />
+                        <TextBox x:Name="txtBxGymScheduleCustomerTrainerName" HorizontalAlignment="Left" Height="23" Margin="123,39,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262" IsReadOnly="True" Background="#FFE5E5E5"/>
+                        <Label x:Name="lblGymScheduleCustomerPlanDescription" Content="Plan Description: " HorizontalAlignment="Left" Margin="10,67,0,0" VerticalAlignment="Top" Width="101" />
+                        <TextBox x:Name="txtBxGymScheduleCustomerPlanDescription" HorizontalAlignment="Left" Height="120" Margin="123,72,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Background="#FFE5E5E5"/>
+                        <Label x:Name="lblGymScheduleCustomerPlanDuration" Content="Plan Duration: " HorizontalAlignment="Left" Margin="10,194,0,0" VerticalAlignment="Top" Width="101" />
+                        <TextBox x:Name="txtBxGymScheduleCustomerPlanDuration" HorizontalAlignment="Left" Height="23" Margin="123,197,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="262" IsReadOnly="True" Background="#FFE5E5E5"/>
+                        <Label x:Name="lblGymScheduleCustomerPlanScheduleDate" Content="Date to Schedule: " HorizontalAlignment="Left" Margin="10,228,0,0" VerticalAlignment="Top" />
+                        <DatePicker x:Name="datePickerGymScheduleCustomerPlanScheduleDate" HorizontalAlignment="Left" Margin="123,229,0,0" VerticalAlignment="Top" Width="169" SelectedDateChanged="DatePickerGymScheduleCustomerPlanScheduleDate_SelectedDateChanged"/>
+                        <Label x:Name="lblGymScheduleCustomerPlanAvailableTimeslots" Content="Available Times: " HorizontalAlignment="Left" Margin="10,258,0,0" VerticalAlignment="Top" Width="101" />
+                        <ComboBox x:Name="cmbBxGymScheduleAvailableTimes" Height="23" Margin="123,258,0,0" VerticalAlignment="Top" SelectedValuePath="scheduleStartTime" DisplayMemberPath="scheduleStartTime" HorizontalAlignment="Left" Width="169" />
+                        <Button x:Name="btnGymScheduleCustomerSubmitSchedule" Content="Schedule" Margin="297,258,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="88" Height="23" Click="BtnGymScheduleCustomerSubmitSchedule_Click"/>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </DockPanel>

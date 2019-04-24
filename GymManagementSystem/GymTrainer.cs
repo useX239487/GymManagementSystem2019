@@ -12,9 +12,6 @@ namespace GymManagementSystem
         private int gymTrainerId;
         private string gymTrainerFirstName;
         private string gymTrainerLastName;
-        private int gymRoomId;
-        private readonly int gymTrainerMaxHours = 8;
-
 
 
         public GymTrainer(string firstName, string lastName, string startTime, int roomId)

@@ -86,7 +86,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="GymCustomer.cs" />
-    <Compile Include="GymEquipmentSchedule.cs" />
+    <Compile Include="GymSchedule.cs" />
     <Compile Include="GymEquipment.cs" />
     <Compile Include="GymExercisePlan.cs" />
     <Compile Include="GymManagementSystemDatabaseDataSet.cs">
