@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:GymManagementSystem"
         xmlns:GymManagementSystemDatabaseDataSetTableAdapters="clr-namespace:GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters" x:Class="GymManagementSystem.MainWindow"
         mc:Ignorable="d"
-        Title="Gym Management System" Height="450" Width="800" Loaded="Window_Loaded" MinWidth="800">
+        Title="Gym Management System" Height="450" Width="800" Loaded="Window_Loaded" MinHeight="450" MinWidth="800">
     <Window.Resources>
         <local:GymManagementSystemDatabaseDataSet x:Key="gymManagementSystemDatabaseDataSet"/>
         <CollectionViewSource x:Key="gymRoomViewSource" Source="{Binding GymRoom, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
@@ -15,6 +15,7 @@
         <CollectionViewSource x:Key="gymCustomerWithTrainerNameViewSource" Source="{Binding GymCustomerWithTrainerName, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
         <CollectionViewSource x:Key="gymCustomerWithExercisePlanViewSource" Source="{Binding GymCustomerWithExercisePlan, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
         <CollectionViewSource x:Key="gymCustomerWithoutExercisePlanViewSource" Source="{Binding GymCustomerWithoutExercisePlan, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
+        <CollectionViewSource x:Key="upcomingSchedulesByCustomerIdViewSource" Source="{Binding UpcomingSchedulesByCustomerId, Source={StaticResource gymManagementSystemDatabaseDataSet}}"/>
     </Window.Resources>
 
 
@@ -22,11 +23,7 @@
         <DockPanel>
             <Menu x:Name="menuMain" DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem Header="_New" />
-                    <MenuItem Header="_Open" />
-                    <MenuItem Header="_Save" />
-                    <Separator />
-                    <MenuItem Header="_Exit" />
+                    <MenuItem Header="_Exit" Click="MenuItem_Click" />
                 </MenuItem>
                 <MenuItem Name="menuView" Header="_View">
                     <MenuItem Name="menuManagementView" Header="_Management Menu" IsCheckable="true" IsChecked="True" Click="MenuManagementView_Click" />
@@ -37,7 +34,6 @@
                 </MenuItem>
                 <MenuItem Name="menuTools" Header="_Tools">
                     <MenuItem x:Name="menuGenerateSeedData" Header="_Generate Fake Data" Click="MenuGenerateFakeData_Click" />
-                    <MenuItem x:Name="menuDeleteAllData" Header="_Delete All Data" Click="MenuDeleteAllData_Click" />
                 </MenuItem>
             </Menu>
             <TabControl x:Name="tabControlMain" Margin="0,0,0,0"  >
@@ -113,10 +109,10 @@
                         <GroupBox x:Name="grpBxAddNewGymRoom" Header="New Gym Room" HorizontalAlignment="Left" Height="148" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="282">
                             <Grid>
                                 <Label x:Name="lblAddGymRoomName" Content="Room Name: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                                <TextBox x:Name="txtBxAddGymRoomName" Height="23" Margin="121,13,10,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="100" KeyDown="TxtBxAddGymRoomName_KeyDown"/>
+                                <TextBox x:Name="txtBxAddGymRoomName" Height="23" Margin="121,13,10,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="100" />
 
                                 <Label x:Name="lblAddGymRoomDescription" Content="Room Description: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
-                                <TextBox x:Name="txtBxAddGymRoomDescription" Height="23" Margin="121,39,10,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="500" KeyDown="TxtBxAddGymRoomDescription_KeyDown"/>
+                                <TextBox x:Name="txtBxAddGymRoomDescription" Height="23" Margin="121,39,10,0" TextWrapping="Wrap" VerticalAlignment="Top" MaxLength="500" />
                                 <Button x:Name="btnNewGymRoomAdd" Content="Add" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="BtnNewGymRoomAdd_Click" />
                                 <Button x:Name="btnNewGymRoomClear" Content="Clear" Margin="10,0,0,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75" Click="BtnNewGymRoomClear_Click" />
 
@@ -203,7 +199,7 @@
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="tabCustomerSchedule" Header="Schedule Training" >
-                    <Grid Background="#FFE5E5E5">
+                    <Grid Background="#FFE5E5E5" DataContext="{StaticResource upcomingSchedulesByCustomerIdViewSource}">
                         <Label x:Name="lblGymScheduleCustomer" Content="Customer Name: " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
                         <ComboBox x:Name="cmbBxGymScheduleCustomer" Height="23" Margin="123,11,0,0" VerticalAlignment="Top" SelectedValuePath="gymCustomerId" DisplayMemberPath="gymCustomerName" HorizontalAlignment="Left" Width="262" SelectionChanged="CmbBxGymScheduleCustomer_SelectionChanged" />
                         <Label x:Name="lblGymScheduleCustomerTrainerName" Content="Trainer Name: " HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top" Width="101" />
@@ -217,6 +213,15 @@
                         <Label x:Name="lblGymScheduleCustomerPlanAvailableTimeslots" Content="Available Times: " HorizontalAlignment="Left" Margin="10,258,0,0" VerticalAlignment="Top" Width="101" />
                         <ComboBox x:Name="cmbBxGymScheduleAvailableTimes" Height="23" Margin="123,258,0,0" VerticalAlignment="Top" SelectedValuePath="scheduleStartTime" DisplayMemberPath="scheduleStartTime" HorizontalAlignment="Left" Width="169" />
                         <Button x:Name="btnGymScheduleCustomerSubmitSchedule" Content="Schedule" Margin="297,258,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="88" Height="23" Click="BtnGymScheduleCustomerSubmitSchedule_Click"/>
+                        <GroupBox x:Name="grpBxScheduleTrainingUpcomingSchedules" Header="Upcoming Scheduled Sessions" Margin="403,10,10.333,9.667">
+                            <DataGrid x:Name="upcomingSchedulesByCustomerIdDataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" ItemsSource="{Binding}" Margin="10,10,10,10" RowDetailsVisibilityMode="VisibleWhenSelected" AlternatingRowBackground="#FFF0F0F0" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn x:Name="gymCustomerNameColumn2" Binding="{Binding gymCustomerName}" Header="gym Customer Name" IsReadOnly="True" Width="SizeToHeader" Visibility="Hidden"/>
+                                    <DataGridTextColumn x:Name="gymScheduleStartDatetimeColumn" Binding="{Binding gymScheduleStartDatetime}" Header="Session Start" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
+                                    <DataGridTextColumn x:Name="gymScheduleEndDatetimeColumn" Binding="{Binding gymScheduleEndDatetime}" Header="Session End" IsReadOnly="True" Width="SizeToCells" MinWidth="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
                     </Grid>
                 </TabItem>
             </TabControl>

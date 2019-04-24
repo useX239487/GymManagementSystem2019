@@ -35,6 +35,7 @@ namespace GymManagementSystem
         private GymCustomerWithoutExercisePlanTableAdapter customerWithoutExercisePlanTableAdapter;
         private GymScheduleAvailabilityTableAdapter gymScheduleAvailabilityTableAdapter;
         private AllGymCustomersWithExercisePlansTableAdapter allCustomersWithExercisePlanTableAdapter;
+        private UpcomingSchedulesByCustomerIdTableAdapter upcomingSchedulesByCustomerIdTableAdapter; 
 
         public MainWindow()
         {
@@ -55,9 +56,15 @@ namespace GymManagementSystem
             customerWithoutExercisePlanTableAdapter = new GymCustomerWithoutExercisePlanTableAdapter();
             gymScheduleAvailabilityTableAdapter = new GymScheduleAvailabilityTableAdapter();
             allCustomersWithExercisePlanTableAdapter = new AllGymCustomersWithExercisePlansTableAdapter();
+            upcomingSchedulesByCustomerIdTableAdapter = new UpcomingSchedulesByCustomerIdTableAdapter();
 
             RefreshAllDataTables();
             MenuManagementView_Click(sender, e);
+            // TODO: Add code here to load data into the table UpcomingSchedulesByCustomerId.
+            // This code could not be generated, because the gymManagementSystemDatabaseDataSetUpcomingSchedulesByCustomerIdTableAdapter.Fill method is missing, or has unrecognized parameters.
+            GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters.UpcomingSchedulesByCustomerIdTableAdapter gymManagementSystemDatabaseDataSetUpcomingSchedulesByCustomerIdTableAdapter = new GymManagementSystem.GymManagementSystemDatabaseDataSetTableAdapters.UpcomingSchedulesByCustomerIdTableAdapter();
+            System.Windows.Data.CollectionViewSource upcomingSchedulesByCustomerIdViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("upcomingSchedulesByCustomerIdViewSource")));
+            upcomingSchedulesByCustomerIdViewSource.View.MoveCurrentToFirst();
         }
 
         private void RefreshAllDataTables()
@@ -126,11 +133,17 @@ namespace GymManagementSystem
             customerWithoutExercisePlanTableAdapter.FillBy(gymManagementSystemDatabaseDataSet.GymCustomerWithoutExercisePlan, trainerId);
         }
 
+        private void RefreshCustomerUpcomingSchedulesById(int customerId)
+        {
+            upcomingSchedulesByCustomerIdTableAdapter.Fill(gymManagementSystemDatabaseDataSet.UpcomingSchedulesByCustomerId, customerId);
+        }
+
         private void PopulateExercisePlanDetailsByCustomer(int customerId)
         {
             txtBxGymScheduleCustomerTrainerName.Text = customerWithTrainerNameTableAdapter.GetTrainerNameByCustomerId(customerId);
             txtBxGymScheduleCustomerPlanDescription.Text = allCustomersWithExercisePlanTableAdapter.GetExercisePlanByCustomerId(customerId);
             txtBxGymScheduleCustomerPlanDuration.Text = allCustomersWithExercisePlanTableAdapter.GetExercisePlanDurationByCustomerId(customerId).ToString();
+            RefreshCustomerUpcomingSchedulesById(customerId);
         }
 
         private int GetTrainerIdByCustomerId(int customerId)
@@ -176,22 +189,6 @@ namespace GymManagementSystem
             txtBxAddGymRoomName.Text = "";
             txtBxAddGymRoomDescription.Text = "";
             txtBxAddGymRoomName.Focus();
-        }
-
-        private void TxtBxAddGymRoomName_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-                BtnNewGymRoomAdd_Click(sender, e);
-            else if (e.Key == Key.Escape)
-                BtnNewGymRoomClear_Click(sender, e);
-        }
-
-        private void TxtBxAddGymRoomDescription_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-                BtnNewGymRoomAdd_Click(sender, e);
-            else if (e.Key == Key.Escape)
-                BtnNewGymRoomClear_Click(sender, e);
         }
 
         private void BtnNewTrainerAdd_Click(object sender, RoutedEventArgs e)
@@ -363,6 +360,7 @@ namespace GymManagementSystem
                 txtBxGymScheduleCustomerTrainerName.Text = "";
                 txtBxGymScheduleCustomerPlanDescription.Text = "";
                 txtBxGymScheduleCustomerPlanDuration.Text = "";
+                PopulateExercisePlanDetailsByCustomer(-1); // Clears tables.
             }
             else
             {
@@ -424,30 +422,48 @@ namespace GymManagementSystem
 
         private void BtnGymScheduleCustomerSubmitSchedule_Click(object sender, RoutedEventArgs e)
         {
-            int customerId = Int32.Parse(cmbBxGymScheduleCustomer.SelectedValue.ToString());
-            int trainerId = GetTrainerIdByCustomerId(customerId);
-            int planId = GetExercisePlanIdByCustomerId(customerId);
-
-            try
+            if (cmbBxGymScheduleCustomer.SelectedIndex == -1)
             {
-                TimeSpan selectedTime = new TimeSpan(Int32.Parse(cmbBxGymScheduleAvailableTimes.Text.Substring(0, 2)),
-                    Int32.Parse(cmbBxGymScheduleAvailableTimes.Text.Substring(3, 2)),
-                    Int32.Parse(cmbBxGymScheduleAvailableTimes.Text.Substring(6, 2)));
-
-                DateTime selectedDateTime = (DateTime)datePickerGymScheduleCustomerPlanScheduleDate.SelectedDate + selectedTime;
-
-                new GymSchedule(trainerId, planId, selectedDateTime, txtBxGymScheduleCustomerPlanDuration.Text);
-
-                
-
-                MessageBox.Show("Successfully scheduled your session!", "Schedule Created Successfully", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                GetAvailableScheduleTimes(sender, e);
+                MessageBox.Show("Please select a customer before attempting to schedule a session",
+                    "No Customer Selected", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (Exception ex)
+            else if (datePickerGymScheduleCustomerPlanScheduleDate.SelectedDate == null)
             {
-                MessageBox.Show($"Error creating schedule.\n\nException message: {ex.Message}",
-                    "Error Creating Schedule", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Please select a date before attempting to schedule a session",
+                    "No Date Selected", MessageBoxButton.OK, MessageBoxImage.Error);
+            } 
+            else if (cmbBxGymScheduleAvailableTimes.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please select a time before attempting to schedule a session",
+                    "No Time Selected", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else
+            {
+                int customerId = Int32.Parse(cmbBxGymScheduleCustomer.SelectedValue.ToString());
+                int trainerId = GetTrainerIdByCustomerId(customerId);
+                int planId = GetExercisePlanIdByCustomerId(customerId);
+
+                try
+                {
+                    TimeSpan selectedTime = new TimeSpan(Int32.Parse(cmbBxGymScheduleAvailableTimes.Text.Substring(0, 2)),
+                        Int32.Parse(cmbBxGymScheduleAvailableTimes.Text.Substring(3, 2)),
+                        Int32.Parse(cmbBxGymScheduleAvailableTimes.Text.Substring(6, 2)));
+
+                    DateTime selectedDateTime = (DateTime)datePickerGymScheduleCustomerPlanScheduleDate.SelectedDate + selectedTime;
+
+                    new GymSchedule(trainerId, planId, selectedDateTime, txtBxGymScheduleCustomerPlanDuration.Text);
+
+
+
+                    MessageBox.Show("Successfully scheduled your session!", "Schedule Created Successfully", MessageBoxButton.OK, MessageBoxImage.Information);
+                    RefreshCustomerUpcomingSchedulesById(customerId);
+                    GetAvailableScheduleTimes(sender, e);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating schedule.\n\nException message: {ex.Message}",
+                        "Error Creating Schedule", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -578,17 +594,9 @@ namespace GymManagementSystem
             RefreshAllDataTables();
         }
 
-        private void MenuDeleteAllData_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            GymRoomTableAdapter roomTableAdapter = new GymRoomTableAdapter();
-            GymTrainerTableAdapter trainerTableAdapter = new GymTrainerTableAdapter();
-            GymEquipmentTableAdapter equipmentTableAdapter = new GymEquipmentTableAdapter();
-            trainerTableAdapter.DeleteAllEntries();
-            equipmentTableAdapter.DeleteAllEntries();
-            roomTableAdapter.DeleteAllEntries();
-            RefreshAllDataTables();
+            System.Windows.Application.Current.Shutdown();
         }
-
-        
     }
 }
